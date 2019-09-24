@@ -1,9 +1,9 @@
 # Timelog
 
-* PROJECT NAME
-* YOUR NAME
-* STUDENT_ID
-* SUPERVISOR NAME
+* An investigation into feedback and representations in deep vision networks
+* Martin Dimitrov
+* 2247164D
+* Jan Paul Siebert
 
 ## Guidance
 
@@ -14,13 +14,15 @@
 
 ## Week 1
 
-### 19 Oct 2019
+### 24 Sep 2019
 
-* *4 hours* Read the project guidance notes
-* *0.5 hour* Created GitLab repository and cloned the cookiecutter for the projects
-* *1 hour* Modified dissertation template, compiled  
+* *4 hours* Attended taught part of project
+* *1 hour* Read the project slides at home
+* *5 min* Put names and titles into the template files
+* *5 min* Set a repo
+* *5 min* Set Trello board and Zotero (reference manager)
 
-## 20 Oct 2019
+### 25 Sep 2019
 
-* *1 hour* meeting with supervisor
-* *2 hours* writing initial version of test harness
+* Meeting with supervisor
+
