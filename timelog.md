@@ -21,8 +21,17 @@
 * *5 min* Put names and titles into the template files
 * *5 min* Set a repo
 * *5 min* Set Trello board and Zotero (reference manager)
+* *1 hour* Read abstract and conclusion of PhD Thesis
 
 ### 25 Sep 2019
 
-* Meeting with supervisor
+* *1h 30 min* meeting with supervisor
+* *20 min* Setup a template with references in Notion
+
+### 27 Sep 2019
+* *1h 15 min* read the Deep Predictive Coding Paper
+
+### 28 Sep 2019
+* *1h* Read Phd Thesis
+
 
