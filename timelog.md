@@ -12,7 +12,7 @@
 * This timelog should be filled out honestly, regularly (daily) and accurately. It is for *your* benefit.
 * Follow the structure provided, grouping time by weeks.  Quantise time to the half hour.
 
-## Week 1
+## Week 1 - 12h 19 mins
 
 ### 24 Sep 2019
 
@@ -33,5 +33,15 @@
 
 ### 28 Sep 2019
 * *1h* Read Phd Thesis
+* *30 min* Implemented my first neural network and trained it on MNIST following a tutorial
+
+### 29 Sep 2019
+* *24 min* Read an article on neural network theory
+* *1h* Finished chapter 1 of PhD Thesis on cortical feedback
+
+## Week 2
+
+### 30 Sep 2019
+* *40 min* Looked at code for the Deep Predictive Coding paper and generally how to write code for neural networks
 
 
