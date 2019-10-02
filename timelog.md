@@ -44,4 +44,11 @@
 ### 30 Sep 2019
 * *40 min* Looked at code for the Deep Predictive Coding paper and generally how to write code for neural networks
 
+### 1 Oct 2019
+* *1h* Read a MSc student's paper on Deep Predictive Coding based on retino-cortical transform
+* *2h* Group Meeting with supervisor
+
+### 2 Oct 2019
+* *1h 15 min* Read Chapter 2 of the PhD Thesis
+* *1h* Read an article which explains neural networks in depth
 
