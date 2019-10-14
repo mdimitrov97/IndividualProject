@@ -10,9 +10,14 @@ Week-by-week plan for the whole project. Update this as you go along.
 ## Winter semester
 
 * **Week 1**
-* Read PhD Thesis *
+** Read PhD Thesis **
+** Continue reading on Neural Networks **
 * **Week 2**
+** Continue Background reading **
+** Learn best practices on writing neural networks code **
 * **Week 3**
+** Do an autoencoder an classifier for CIFAR10 **
+** Research heatmaps in Python **
 * **Week 4**
 * **Week 5**
 * **Week 6**
@@ -21,6 +26,7 @@ Week-by-week plan for the whole project. Update this as you go along.
 * **Week 9**
 * **Week 10**
 * **Week 11 [PROJECT WEEK]**
+** start writing up on dissertation **
 * **Week 12 [PROJECT WEEK]** Status report submitted.
 
 ## Winter break
@@ -28,6 +34,7 @@ Week-by-week plan for the whole project. Update this as you go along.
 ## Spring Semester
 
 * **Week 13**
+** evaluation **
 * **Week 14**
 * **Week 15**
 * **Week 16**

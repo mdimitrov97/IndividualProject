@@ -39,7 +39,7 @@
 * *24 min* Read an article on neural network theory
 * *1h* Finished chapter 1 of PhD Thesis on cortical feedback
 
-## Week 2
+## Week 2 - 8h 26 min
 
 ### 30 Sep 2019
 * *40 min* Looked at code for the Deep Predictive Coding paper and generally how to write code for neural networks
@@ -51,4 +51,44 @@
 ### 2 Oct 2019
 * *1h 15 min* Read Chapter 2 of the PhD Thesis
 * *1h* Read an article which explains neural networks in depth
+
+### 3 Oct 2019
+* *20 min* Started reading chapter 3 of PhD Thesis
+
+### 5 Oct 2019
+* *45 min* Sorted out minutes from first two meetings and also sorted out some resources in Notion
+* *25 min* Read PhD Thesis
+* *9 min* Read an article on object detection models such as R-CNN and YOLO
+
+### 5 Oct 2019
+* *37 min* Finished Chapter 3 Of Thesis
+* *30 min* Ran the code for the Deep Predictive Coding paper on Colab
+
+### Week 3 - 8h 16 min
+
+### 7 Oct 2019
+* *1h* Read a paper on Deep Predictive Coding using Local Recurrent Processing
+* *15 min* Autoencoders tutorial
+* *11 min* Ran the code for the paper
+* *53 min* Finished chapter 4 of thesis
+
+### 8 Oct 2019
+* *23 min* Wrote a high-level description of the project
+* *2h* Meeting with supervisor
+
+### 10 Oct 2019
+* *31 min* Read a paper on cortical feedback signals
+* *1h 24 min* Experimented running TensorBoard with PyTorch
+* *37 min* Read a paper on attentive GAN
+
+### 12 Oct 2019
+* *23 min* Read a paper on R-CNN
+* *1h 1 min* Read a paper on SegNet
+* *15 min* Researched how to implement heatmaps using PyTorch, found out that this is called Grad-CAM
+* *23 min* Did a tutorial on how to use heatmaps on images
+
+### 13 Oct 2019
+* *3h* Looked in depth on how to implement code for a simple neural network
+* *4h* Autoencoder on the CIFAR10 Dataset
+
 
