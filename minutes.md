@@ -69,3 +69,28 @@ Further work
 Semantic segmentation over an ensemble of different input images
 Network trained on semantic segmentation and feed that back - bootstrapping
 
+## Week 4
+A prototype dissertation - status report
+Always do simple thing first, then go to more complicated things
+
+Subtractive feedback process
+Encoding loss
+Take a matrix of coefficients multiplied by input_image, subtract that from output
+Class separation
+Hypothesis - weight matrix will generate a mask covering the object
+Leave stuff that is of interest
+Linear predictive encoding networks
+LSTM doing feedback between layers
+Take the input, reconstruct it, multiply by -1
+Take the input, multiply by 1
+
+Joint loss - between the output and classification
+2,3 fully connected layers
+LSTMs/Recurrent units
+Explicitly training a segmentation mask and a class - then using that in the feedback loop
+
+Try and learn object class and segmentation mask at the same time through feedback
+
+## Week 5
+End goal - what would the network do as a task
+Search terms for papers
