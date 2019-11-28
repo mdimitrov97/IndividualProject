@@ -92,5 +92,64 @@ Explicitly training a segmentation mask and a class - then using that in the fee
 Try and learn object class and segmentation mask at the same time through feedback
 
 ## Week 5
-End goal - what would the network do as a task
+Questions to ask
+End goal - what would the network do as a task - image captioning, visual question answering
 Search terms for papers
+
+Motivation should talk about particular object - This project is about ..., doing.., done by..., this is why the idea is important
+.. and .. did this - comparison between my project and what has been done before, explain how it helped you solve your problem
+Summarise the gap between what's done and what you're doing
+Approach
+Risk, mitigation of what you do
+Reasons for doing things
+Timeline from now until Christmas
+Pixels 
+2-3 fully connected#
+
+Each individual loss
+Plot the loss graphs
+Focus the attention
+1D tensor - input to the classifier
+Infer the pixels itself
+what feedback do we currently implement
+Gated recurrent unit - previous inputs mixed with currently
+Deep predictive coding - feedback between layers, output feeding back into the input
+Attention-GAN!!!!!!!!!
+Mix previous outputs with current inputs - what i want
+Mix previous inputs with current inputs - what is done
+Remember events that happened
+Latent space
+Match size of fully connected layer the output bottleneck layer
+Take the encoded images and then flatten them to 1D, then take that and process through 3 FC
+Adversarial autoencoder
+rasbt/deeplearning models - look up this repo
+Attention Guided CycleGAN
+Conv LSTM takes the output of the autoencoder
+Terms by which to search papers - recurrents, attention, predictive coding, feedback networks, extended surround
+
+Cortical mapping
+
+## Week 6
+We discussed that the combined model should be compared with the baselines.
+Actions for me to do are plot the graphs and look at the ranges of the different losses as well as split the training set into training and validation.
+
+## Week 7
+We looked at the way the models are performing. We found out that the architectures are not exactly the same.
+Actions for me to do are to make sure architectures are identical and look at how they're performing.
+I shall include a loss switch for the mixed model which uses only one type of loss and look at whether there is a difference between that and the original individual model.
+
+## Week 8
+Question - which optimizer to use
+Autoencoders use Adam so how is that going to translate in the model?
+
+## Week 9
+Progress - all models using Adam, scaling losses improves performance
+How does all of this relate to feedback
+Output buffer is initialized to 0
+Image minus reconstructed image and that goes into the network
+Minibatch
+NARX architecture
+Background - Gated recurrent unit, the LSTM, Deep Predictive Coding Network, Class Activation Mapping, NARX architecture
+Taking backpropagations and using them directly
+Inverted heatmap both subtractions and multiplicative
+Learning rate alpha (1-alpha)
