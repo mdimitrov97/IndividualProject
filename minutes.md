@@ -37,7 +37,7 @@ A possible structure of the dissertation is
 Description
 The aim of this project is to investigate different feedback mechanisms using deep artifical neural networks. 
 These will be then used to analyse which pixels in the input image contribute to object classification.
-The motivation for building a model which utilizes feedback connections is that they are transmitting information to the early visual cortex not available via feedback connections.
+The motivation for building a model which utilizes feedback connections is that they are transmitting information to the early visual cortex not available via feedforward connections.
 
 Feedback allows expectation to be compared to reality. Feedforward makes a hypothesis what an image looks like.Feedback can compare what was hypothesised to the actual input image - measure error.
 Topics discussed include Degree of feedback,Forward gain, feedback gain, gain face margin. As you increase the gain of the system, the negative feedback occurs more accurately.
@@ -141,6 +141,7 @@ I shall include a loss switch for the mixed model which uses only one type of lo
 ## Week 8
 Question - which optimizer to use
 Autoencoders use Adam so how is that going to translate in the model?
+We looked at the performance of the scaled model on the FashionMNIST dataset.
 
 ## Week 9
 Progress - all models using Adam, scaling losses improves performance
@@ -153,3 +154,51 @@ Background - Gated recurrent unit, the LSTM, Deep Predictive Coding Network, Cla
 Taking backpropagations and using them directly
 Inverted heatmap both subtractions and multiplicative
 Learning rate alpha (1-alpha)
+
+## Week 10
+No meeting due to sickness
+
+## Week 11
+I have subtracted the reconstructed image from the original.
+I have also started looking at code implementations of different papers.
+Six channels of input - output goes into one channel, input into the other
+
+### Week 12
+Question - does evaluating loss and accuracy count as evaluation
+Feedback in terms of LSTM, previous layers are taken into account
+Feedback in predictive coding - feedback between
+NARX - output is generated and fed back into the entire system and fed back into the loop
+Networks which incorporate feedback have the possibility of converging a solution
+Feedback is a potential mechanism to improve obtained results in visual processing tasks using deep nets. One particular task is automatic segmentation as it requires labeled data.
+Objective - examine existing feedback architectures for their potential to improve classification results and particular automatic segmentation
+Formulate new architectures
+Minibatch
+Issue - bootstrap training, joint model
+Explore feedback archtitecutres with a view to attempt to build a feedback arch that automatically segments what it classifies/enhance classification by suppressing irrelevant or enhacing parts of an image that contribute to classification process
+Requires hands-segmented data
+Automatically segment information background
+Explore potential feedback architecture for this task
+Approach - examine standard architectures - LSTM Deep Predictive Coding NARX
+Classifiers
+FashionMNIST pretrained weights
+Explain joint loss function
+Explored implementing a joint loss function - both types of loss
+Risk - not discovering an architecture
+Focus on NARX
+Pretrain the autoencoder
+Wednesday - 14:00
+
+### Week 13
+Doesn't the input get obscured by subtracting
+Improvement on classification
+Plan for break - write as much as possible on introduction and background, experiment with LSTM and Deep Predictive Coding
+
+Pretrain the classifier
+Initialize output layer to zero
+Freeze the classifier and then train the generator to subtract the background
+Set threshold
+Joint model using classifier loss
+
+Loss function and how to train 
+Multiplicative
+I would expect to see background and a mask of the image

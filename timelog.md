@@ -39,14 +39,14 @@
 * *24 min* Read an article on neural network theory
 * *1h* Finished chapter 1 of PhD Thesis on cortical feedback
 
-## Week 2 - 8h 26 min
+## Week 2 - 7h 26 min
 
 ### 30 Sep 2019
 * *40 min* Looked at code for the Deep Predictive Coding paper and generally how to write code for neural networks
 
 ### 1 Oct 2019
 * *1h* Read a MSc student's paper on Deep Predictive Coding based on retino-cortical transform
-* *2h* Group Meeting with supervisor
+* *1h* Group Meeting with supervisor
 
 ### 2 Oct 2019
 * *1h 15 min* Read Chapter 2 of the PhD Thesis
@@ -64,7 +64,7 @@
 * *37 min* Finished Chapter 3 Of Thesis
 * *30 min* Ran the code for the Deep Predictive Coding paper on Colab
 
-### Week 3 - 16h 9 min
+### Week 3 - 15h 9 min
 
 ### 7 Oct 2019
 * *1h* Read a paper on Deep Predictive Coding using Local Recurrent Processing
@@ -74,7 +74,7 @@
 
 ### 8 Oct 2019
 * *23 min* Wrote a high-level description of the project
-* *2h* Meeting with supervisor
+* *1h* Meeting with supervisor
 
 ### 10 Oct 2019
 * *31 min* Read a paper on cortical feedback signals
@@ -91,14 +91,14 @@
 * *3h* Looked in depth on how to implement code for a simple neural network
 * *4h* Autoencoder on the CIFAR10 Dataset
 
-### Week 4 - 12h 40 min
+### Week 4 - 11h 10 min
 
 ### 14 Oct 2019
 * *25 min* Looked at a paper which discussed class activation mapping
 * *1h* Tried implementing CAM on the CIFAR dataset
 
 ### 15 Oct 2019
-* *2h 30 min* Meeting with supervisor
+* *1h* Meeting with supervisor
 
 ### 16 Oct 2019
 * *5h* Read a few chapters of a book on Neural Networks to get familiar with all the theory
@@ -181,7 +181,7 @@
 * *43 min* Read a paper on deep predictive coding
 * *3h* Switched from Fashion MNIST to CIFAR
 
-### Week 8
+### Week 8 - 15h 27 min
 
 ### 11 Nov 2019
 * *42 min* Read a paper on Human Attention in Visual Question Answering
@@ -226,10 +226,61 @@
 * *25 min* Modified style of networks
 
 
-### Week 10
+### Week 10 - 8h 54 min
 
 ### 25 Nov 2019
 * *6h* Tried implementing feedback on FashionMNIST, saw results on CIFAR
 
 ### 26 Nov 2019
 * *1h* Tried implementing feedback
+
+### 1 Dec 2019
+* *1h 54 min* Cleaned up code to find where size error is coming from
+
+
+### Week 11 - 3h
+
+### 2 Dec 2019
+* *2h 30 min* Combined my classifier with GRAD CAM on CIFAR
+
+### 3 Dec 2019
+* *30 min* Converted code to take images from the test set directly
+
+### Week 12
+
+### 12 Dec 2019 - 5h 15 min
+
+* *1h* Started work on status report
+* *1h 15 min* Read Feedback CNN for Visual Localization and Segmentation
+
+### 13 Dec 2019
+* *30 min* Experimented with subtracting images
+* *1h* Meeting with supervisor
+
+### 15 Dec 2019
+* *30 min* Did a tutorial on intermediate activations
+* *1h* Experimented with subtracting
+
+### Week 13 - 2h
+
+### 17 Dec 2019
+* *1h* Evaluated results on different ranges
+* *1h* Expanded status report
+
+### Holiday Break
+
+### 27 Dec 2019
+* *42 min* Finished reading Visual Localization and Segmentation paper
+* *1h 2 min* Started reading a hierarchical neural networks book
+
+### 28 Dec 2019
+* *23 min* Read the dissertation template and looked at latex syntax
+
+### 29 Dec 2019
+* *1h 3 min* Read Chapter 2 of the hierarchical NN book
+* *1h 24 min* Looked at results on CIFAR
+
+### 30 Dec 2019
+* *2h* Tried to improve models on CIFAR
+* *17 min* Explored options for other datasets
+* 30 min* Evaluated results on SVHN dataset
