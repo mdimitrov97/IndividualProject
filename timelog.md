@@ -246,9 +246,9 @@
 ### 3 Dec 2019
 * *30 min* Converted code to take images from the test set directly
 
-### Week 12
+### Week 12 - 5h 15 min
 
-### 12 Dec 2019 - 5h 15 min
+### 12 Dec 2019
 
 * *1h* Started work on status report
 * *1h 15 min* Read Feedback CNN for Visual Localization and Segmentation
@@ -267,7 +267,7 @@
 * *1h* Evaluated results on different ranges
 * *1h* Expanded status report
 
-### Holiday Break
+### Holiday Break - 10h 30 min
 
 ### 27 Dec 2019
 * *42 min* Finished reading Visual Localization and Segmentation paper
@@ -281,6 +281,142 @@
 * *1h 24 min* Looked at results on CIFAR
 
 ### 30 Dec 2019
-* *2h* Tried to improve models on CIFAR
+* *2h* Improved models on CIFAR
 * *17 min* Explored options for other datasets
-* 30 min* Evaluated results on SVHN dataset
+* *30 min* Evaluated results on SVHN dataset
+
+### 2 Jan 2020
+* *1h 25 min* Read unsupervised image-to-image translation
+* *15 min* Refactored plotting and saving code
+
+### 3 Jan 2020
+* *30 min* Tested results with a pretrained resnet on classifier
+
+### 4 Jan 2020
+* *2h* Modified pretrained resnet, used resnet for autoencoder and joint model
+
+### 5 Jan 2020
+* *20 min* Used resnet on subtracting generated output from input, changed activation to tanh
+
+### 7 Jan 2020
+* *40 min* Experimented with different values for weight decay
+
+### Week 14 - 2h 30 min
+
+### 13 Jan 2020
+* *1h 30 min* Evaluated different architectures implemented so far, freezed fully connected layers
+
+### 14 Jan 2020
+* *1h* Meeting with supervisor
+
+### 19 Jan 2020
+* *1h* Tried multiplication instead of subtraction, initialized weights to zero
+* *40 min* Read Alvaro's paper
+
+
+### Week 15 - 7h 21 min
+
+### 20 Jan 2020
+* *4h* Pretrained classifier and freezed in joint network
+
+### 21 Jan 2020
+* *21 min* Ran Alvaro's scripts
+
+### 25 Jan 2020
+* *3h* Collated results from experiments
+
+### Week 16 - 12h
+
+### 27 Jan 2020
+* *4h* Experimented with GradCAM and managed to bring out the foreground of the image?
+
+### 30 Jan 2020
+* *4h* Used foreground as an input to the network
+
+### 31 Jan 2020
+* *2h* Tried to superimpose gradcam and original image 
+
+### 2 Feb 2020
+* *2h* Evaluated models using GradCAM
+
+### Week 17 - 21h
+
+### 3 Feb 2020
+* *4h* Evaluated the model "image - image*clip(1-gradcam)*alpha"
+* *2h* Evaluated this model on CIFAR and SVHN
+
+### 4 Feb 2020
+* *2h* Implemented the model "image - clip(image*(1-gradcam)*alpha"
+* *2h* Evaluated this model on CIFAR and SVHN
+
+### 5 Feb 2020
+* *5h* Implemented a model which takes the output of the generator and uses it as a second channel
+* *3h* Evaluated this model on CIFAR and SVHN
+
+### 7 Feb 2020
+* *2h* Collated results in a slideshow
+* *1h* Meeting with supervisor
+
+### 8 Feb 2020
+* *3h* Included a graph which showed the accuracy per feedback iteration on test set
+
+### Week 18 - 16h
+
+### 11 Feb 2020
+* *4h* Collated results on subtractive and multiplicative feedback on CIFAR and SVHN for a different number of epochs and iterations
+
+### 12 Feb 2020
+* *2h* Collated results on using generator output as a second channel on CIFAR and SVHN for different epochs and iterations
+
+### 14 Feb 2020
+* *1h* Collated results in a slideshow
+* *1h* Meeting with supervisor
+
+### 16 Feb 2020
+* *3h* Downloaded images from Alvaro's dataset, used a subset of them and uploaded onto Google Drive
+* *5h* Evaluated models implemented so far on the dataset
+
+### Week 19 - 16h
+
+### 17 Feb 2020
+* *7h* Used a pretrained classifier on feedback model with all layers upto last output layer frozen, then finetuned by unfreezing the layers
+
+### 18 Feb 2020
+* *1h* Meeting with supervisor
+
+### 22 Feb 2020
+* *3h* Evaluated results on CIFAR, SVHN and Alvaro's dataset
+
+### 23 Feb 2020
+* *4h* Extended classifier to have more convolutional layers and modified strides and padding
+* *1h* Experimented with calculating strides and padding to ensure theoretical knowledge
+
+### Week 20 - 8h 45 min
+
+### 25 Feb 2020
+* *3h* Evaluated results on the expanded classifier
+* *1h* Meeting with supervisor
+
+### 27 Feb 2020
+* *2h* Collated dataset of pictures of fruits
+
+### 1 March 2020
+* *2h* Evaluated baselines on fruits set
+* *45 min* Wrote an initial outline of the dissertation
+
+### Week 21 - 4h
+
+### 2 March 2020
+* *1h* Finished outline of dissertation
+
+### 3 March 2020
+* *1h* Meeting with supervisor
+
+### 7 March 2020
+* *2h* Cleaned up code
+
+### Week - 4h 30 min
+
+### 9 March 2020
+* *3h* Further cleaned up code and evaluated models
+* *1h 30 min* Started working on "Implementation" and "Evaluation" chapters

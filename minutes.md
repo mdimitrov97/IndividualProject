@@ -63,7 +63,7 @@ Multiply input image by heatmap to reduce gain
 Blend: alpha*heatmap*input_image + (1-alpha)*input image
 Either all input image or the input image modulated by the heatmap
 Reduce the contrast
-Last idea - Recurrent architecture, use LSTMs and then train it temporal data
+Last idea - Recurrent architecture, use LSTMs and then train it on temporal data
 
 Further work
 Semantic segmentation over an ensemble of different input images
@@ -202,3 +202,39 @@ Joint model using classifier loss
 Loss function and how to train 
 Multiplicative
 I would expect to see background and a mask of the image
+
+### Week 14
+Progress - Reread the translation paper, started working with the SVHN dataset as well, started using pretrained resnet, started using scheduler, tried freezing fully connected layers
+Take the output image as a second channel, six channels - might not see segmentation mask
+Invert the feedback channel
+
+Multiplicative feedback - input image by generated image
+Initialize the output layer to all 1s/0s - Weights will all be 1s/0s
+Train classifier and freeze it for generating the images
+Another layer same size as the convolution layer, freeze encoder, initialize the last layer to 1s/0s and do subtraction from last layer
+Pretrain the classifier, initialize autoencoder layers to zero - first thing
+Have a graph of loss and classification rate
+Take the last set of weights and start training with subtraction
+
+Take the output, treat it as a second channel
+Second RGB
+
+Initialise output layer
+Subtract - zero
+Multiply - one
+Pretrain classifier
+Freeze classifier let generator
+Generate a pattern that improves the classification
+Final layer to zero
+Output layer to zero
+Dynamic range
+Alpha parameter
+
+1080, downsample three times
+bicubic intepolation
+98% - plain classifier
+
+Outline
+Dynamic UNet - fast.ai
+
+Purely neuroscience subsection in background?
