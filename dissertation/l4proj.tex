@@ -1,0 +1,995 @@
+% REMEMBER: You must not plagiarise anything in your report. Be extremely careful.
+\documentclass{l4proj}
+
+    
+%==============================================================================
+% Put any additional packages here
+% You can add any packages you want, as long as it does not alter
+% the overall format (e.g. don't change the margins or the reference style).
+%
+\usepackage{amsmath}
+\usepackage{pdfpages} % if you want to include a PDF for an ethics checklist, for example
+%
+%
+
+\begin{document}
+
+%==============================================================================
+%% METADATA
+\title{An investigation into feedback and representations in deep vision networks} % change this to your title
+\author{Martin Dimitrov}
+\date{\today}
+
+\maketitle
+
+%==============================================================================
+%% ABSTRACT
+\begin{abstract}
+    Every abstract follows a similar pattern. Motivate; set aims; describe work; explain results.
+    \vskip 0.5em
+    ``XYZ is bad. This project investigated ABC to determine if it was better. 
+    ABC used XXX and YYY to implement ZZZ. This is particularly interesting as XXX and YYY have
+    never been used together. It was found that  
+    ABC was 20\% better than XYZ, though it caused rabies in half of subjects.''
+\end{abstract}
+
+%==============================================================================
+%% ACKNOWLEDGEMENTS
+\chapter*{Acknowledgements}
+% Enter any acknowledgements here. This is optional; you may leave this blank if you wish,
+% or remove the entire chapter
+%
+% We give thanks to the Gods of LaTeX, who in their eternal graciousness, 
+% have granted that this document may compile without errors or overfull hboxes.
+I would like to thank my supervisor, Dr Jan-Paul Siebert, and Piotr Ozimek, for their advice and support. 
+%
+
+%==============================================================================
+
+% EDUCATION REUSE CONSENT FORM
+% If you consent to your project being shown to future students for educational purposes
+% then insert your name and the date below to  sign the education use form that appears in the front of the document. 
+% You must explicitly give consent if you wish to do so.
+% If you sign, your project may be included in the Hall of Fame if it scores particularly highly.
+%
+% Please note that you are under no obligation to sign 
+% this declaration, but doing so would help future students.
+%
+%\def\consentname {My Name} % your full name
+%\def\consentdate {20 March 2018} % the date you agree
+%
+\def\consentname {Martin Dimitrov}
+\def\consentdate {\today}
+\educationalconsent
+
+
+%==============================================================================
+\tableofcontents
+
+%==============================================================================
+%% Notes on formatting
+%==============================================================================
+% The first page, abstract and table of contents are numbered using Roman numerals and are not
+% included in the page count. 
+%
+% From now on pages are numbered
+% using Arabic numerals. Therefore, immediately after the first call to \chapter we need the call
+% \pagenumbering{arabic} and this should be called once only in the document. 
+%
+%
+% The first Chapter should then be on page 1. 
+
+% PAGE LIMITS
+% You are allowed 40 pages for a 40 credit project and 30 pages for a 
+% 20 credit report. 
+% This includes everything numbered in Arabic numerals (excluding front matter) up
+% to but *excluding the appendices and bibliography*.
+%
+% FORMATTING
+% You must not alter text size (it is currently 10pt) or alter margins or spacing.
+% Do not alter the bibliography style. 
+%
+%==================================================================================================================================
+%
+% IMPORTANT
+% The chapter headings and structure here are **suggestions**. You don't have to follow this model if
+% it doesn't fit your project. Every project should have an introduction and conclusion,
+% however.  If in doubt, your supervisor can give you specific guidance; their view takes precedence over
+% the structure suggested here.
+%
+%==================================================================================================================================
+\chapter{Introduction}
+\label{chap:intro}
+% reset page numbering. Don't remove this!
+\pagenumbering{arabic} 
+
+%\todo{}
+% You can use \todo{} to mark text that needs to be fixed. Anything inside will appear as highlighted 
+% text in the final copy, and you will also get warnings when you compile (so you don't
+% forget to take them out!)
+
+%Why should the reader care about what are you doing and what are you %actually doing?
+\section{Motivation}
+The majority of modern state-of-the-art deep learning approaches in computer vision use convolutional neural networks (\cite{convnets}). The main reason for the success of these techniques is that hardware (\cite{GPU}) and data are easily accessible. Most of these models extract features using feedforward connections between convolutional layers. 
+
+While these models have been widely successful, \cite{feedbackcon} showed that human vision utilises feedback and recurrent connections in addition to feedforward connections. Furthermore, \cite{cognitive} and \cite{objectrec} demonstrated that feedback processing improves the ability to recognise objects and enables cognitive processes to influence perception.
+Therefore, feedforward networks can be extended to use feedback connections so that they can be a better approximation to human vision.
+
+In the case of neural networks, feedback is defined as an iterative process - using the output of a system as the input to the same system on the next iteration. This is a potential mechanism to improve the results obtained in visual processing tasks compared to feedforward networks. An example of such a task is segmentation of objects.
+
+%\textbf{Motivate} first, then state the general problem clearly. 
+
+\section{Aims}
+The aim of this project is to examine different cognitive feedback mechanisms which will be used in convolutional networks for solving problems in computer vision. This exploration is done with the view to build an end-to-end neural network which will automatically segment the classified object by enhancing relevant information or suppressing insignificant parts of the image. Another purpose of this project is to investigate whether introducing feedback contributes to an increase in the performance of the network.
+
+%This is the key question for any writing. Your reader:
+
+\section{Summary}
+This chapter motivated the advantages of using feedback in convolutional neural networks and outlined the aims of the project as well.
+The rest of the dissertation is structured as follows.
+\begin{itemize}
+    \item \textbf{Chapter \ref{chap:background}} provides background on relevant topics for this project such as autoencoders, transfer learning, class activation mappings and existing feedback architectures.
+    \item \textbf{Chapter \ref{chap:approach}} discusses the approach taken and the design decisions made for implementing feedback in neural networks. \item \textbf{Chapter \ref{chap:implementation}} presents technical details about each implemented feedback architecture.
+    \item \textbf{Chapter \ref{chap:evaluation}} provides an evaluation strategy, presents and discusses numerical results. This includes metrics such as loss, accuracy and confusion matrices. It also explores which hyperparameters influence the performance of the networks the most.
+    \item Finally, \textbf{Chapter \ref{chap:conclusion}} summarises and reflects on the project. In addition, it proposes ideas for future work.
+\end{itemize}
+ 
+
+%\begin{itemize}
+    %\item
+    %is a trained computer scientist: \emph{don't explain basics}.
+    %\item
+    %has limited time: \emph{keep on topic}.
+    %\item
+    %has no idea why anyone would want to do this: \emph{motivate clearly}
+    %\item
+    %might not know \emph{anything} about your project in particular:
+    %\emph{explain your project}.
+    %\item
+    %but might know precise details and check them: \emph{be precise and
+    %strive for accuracy.}
+    %\item
+    %doesn't know or care about you: \emph{personal discussions are
+    %irrelevant}.
+%\end{itemize}
+
+%Remember, you will be marked by your supervisor and one or more members
+%of staff. You might also have your project read by a prize-awarding
+%committee or possibly a future employer. Bear that in mind.
+
+%There are many style guides on good English writing. You don't need to
+%read these, but they will improve how you write.
+
+%\begin{itemize}
+    %\item
+    %\emph{How to write a great research paper} \cite{Pey17} %(\textbf{recommended}, even though you aren't writing a research paper)
+    %\item
+    %\emph{How to Write with Style} \cite{Von80}. Short and easy %to read. Available online.
+    %\item
+    %\emph{Style: The Basics of Clarity and Grace} \cite{Wil09} A very popular modern English style guide.
+    %\item
+    %\emph{Politics and the English Language} \cite{Orw68}  A %famous essay on effective, clear writing in English.
+    %\item
+    %\emph{The Elements of Style} \cite{StrWhi07} Outdated, and %American, but a classic.
+    %\item
+    %\emph{The Sense of Style} \cite{Pin15} Excellent, though %quite in-depth.
+%\end{itemize}
+
+
+%\begin{itemize}
+%\item If you are referring to a reference as a noun, then cite it %as: ``\citet{Orw68} discusses the role of language in political %thought.''
+%\item If you are referring implicitly to references, use: ``There %are many good books on writing \citep{Orw68, Wil09, Pin15}.''
+%\end{itemize}
+
+%There is a complete guide on good citation practice by Peter %Coxhead available here: %\url{http://www.cs.bham.ac.uk/~pxc/refs/index.html}. 
+%If you are unsure about how to cite online sources, please see \%citet{UNSWWebsite}. 
+%\footnote{Specifying an online resource like \url{https://developer.android.com/studio}
+%in a footnote sometimes makes more sense than including it as a %formal reference.}
+
+
+%\begin{highlight_title}{WARNING}
+    
+    %If you include material from other sources without full and correct attribution, you are commiting plagiarism. The penalties for plagiarism are severe.
+    %Quote any included text and cite it correctly. Cite all images, figures, etc. clearly in the caption of the figure.
+%\end{highlight_title}
+
+%If you are quoting a long passage, use a \texttt{quote} %environment:
+
+%\begin{quote}
+     %If you scribble your thoughts any which way, your readers will surely feel that you care nothing about them. They will mark you down as an egomaniac or a chowderhead -or, worse, they will stop reading you. The most damning revelation you can make about yourself is that you do not know what is interesting and what is not.
+%\end{quote} \citep{Von80}
+
+%If you are quoting inline, like Simon Peyton-Jones' following remark, use quotation marks ``Conveying the intuition is primary, not
+%secondary'' \citep{Pey17}.
+
+
+%==================================================================================================================================
+\chapter{Background}
+\label{chap:background}
+
+%What did other people do, and how is it relevant to what you want %to do?
+\section{Autoencoders}
+An autoencoder is a neural network that attempts to copy its input to its output. It consists of two parts - encoder and decoder. In addition to input and output layers, it has a hidden layer (known as latent space or code) which represents the input. The encoder maps the input to the latent space whereas the decoder maps the latent space to a reconstruction of the input. The hidden layer contains a smaller number of neurons than the input layer. Because of this, the network reconstructs its input from a smaller feature space and therefore it learns a more compact representation of the original data.(\cite{deeplearning}) In computer vision they can be used for tasks such as denoising images.(\cite{denoising})
+
+
+\section{Transfer learning}
+Transfer learning (\cite{transfer}) is the concept of using a pretrained neural network for a new related task. There are two main types of transfer learning.
+\begin{itemize}
+    \item Finetune a network - instead of randomly initialising the weights of our network, we set the weights to be equal to the weights of a pretrained network. 
+    \item Use part of the network as a feature extractor and then train newly added layers - we can take a neural network and freeze the weights for all layers except the last one which will be adapted to our task. In this way, only the last layer would be initialised with random weights and fully trained.
+\end{itemize}
+    
+Transfer learning is suitable for introducing feedback - we will set the weights of the convolutional layers of our feedback networks to the weights of the convolutional layers of our baseline classifier and let the network apply feedback.
+
+\section{Activation functions}
+The activation function decides whether a neuron should be activated or not. The purpose of using it is to introduce non-linearity into the output of a neuron. This section describes activation functions that we deemed useful for the implementation of this project.
+
+\subsection{Rectified linear unit}
+The rectified linear unit function (ReLU) was introduced by \cite{relu} and is defined as
+\begin{equation}
+    f(x)=x^{+}=\max(0,x)
+\end{equation}
+\cite{dyingrelu} demonstrated that sometimes the ReLU neurons may become inactive and in this way only zeroes would be output for any input. This means that no gradients flow backward through the neuron. Consequently, this could have a negative effect on the performance of the network. A possible mitigation is to use the Leaky ReLU function instead.
+
+\cite{leakyrelu} defined the Leaky ReLU function as
+\begin{equation}
+    f(x)={\begin{cases}x&{\text{if }}x>0,\\0.01x&{\text{otherwise}}.\end{cases}}
+\end{equation}
+This function introduces a small non-zero gradient when a neuron is not active.
+
+\subsection{Hyperbolic tangent}
+A hyperbolic function is a trigonometric function which is defined for a hyperbola instead of a circle. 
+
+An example of a suitable activation non-linear function is the hyperbolic tangent. It is defined as
+\begin{equation}
+    f(x)=\tanh(x)={\frac {(e^{x}-e^{-x})}{(e^{x}+e^{-x})}}
+\end{equation}
+
+\subsection{Softmax}
+The Softmax function is an activation function used for mapping the output of a network to a probability distribution over the predicted output classes. For i = 1,...,j it is defined as
+
+\begin{equation}
+    f_{i}({\vec {x}})={\frac {e^{x_{i}}}{\sum _{j=1}^{J}e^{x_{j}}}} 
+\end{equation}.
+
+We will be applying the LogSoftmax function on the output layer which is just the function described above, followed by a logarithm. This will provide us with a vector which contains the probabilities of an image belonging to each possible class.
+
+\section{Class Activation Mappings}
+Class Activation Mapping (CAM) is a visualisation technique proposed by (\cite{cam}). It allows convolutional neural networks used for classification to perform object localization without the need for bounding box annotations. This technique generates a heatmap which is used to highlight the regions of the image the convolutional network used for classification. Furthermore, it can be used on other vision tasks such as image captioning or visual question answering.(\cite{VQA}). A restriction of this approach is that the networks have to be fully convolutional, i.e. they have to contain convolutional layers only. Such networks may perform worse on some task compared with traditionally used networks, or may not be applicable to other tasks at all.
+
+A generalisation of this approach was designed by \cite{gradcam} called Gradient-weighted class activation mapping (Grad-CAM). This method is applicable to any convolutional neural network without requiring changes to be made to its architecture. In contrast with CAM which generates the maps by performing global average pooling (\cite{gap}) before prediction, the Grad-CAM approach uses the gradients of a target label flowing into the final convolution layer to produce the heatmap.
+
+
+\section{Recurrent Neural Networks}
+Recurrent neural networks are networks which have internal memory based on the input data. The consequence of adding memory to neural networks is that in this way recurrent neural networks are able to perform tasks that feedforward networks would not be able to, for example predicting or learning items in a sequence.(\cite{recurrent}) Their output is a combination of the input and the internal state.
+\textbf{Figure \ref{fig:rnn}} illustrates the structure of recurrent neural network.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/rnn.jpg}    
+
+    z\caption{Visual illustration of a recurrent neural network (\cite{rnngraph})} %looking at: ``A schematic of the rectifying linear unit, %where $a$ is the output amplitude,
+    %$d$ is a configurable dead-zone, and $Z_j$ is the input %signal'', as well as why the reader is looking at this: 
+    %``It is notable that there is no activation \emph{at all} %below 0, which explains our initial results.'' 
+    %}
+
+    % use the notation fig:name to cross reference a figure
+    \label{fig:rnn} 
+\end{figure}
+
+
+\section{Feedback architectures}
+\subsection{Recurrent Neural Networks using Feedback}
+\label{recfeedback}
+\cite{feedbackrnn} built a recurrent neural network which used feedforward, feedback and lateral connections. They trained and tested their network on a synthesised dataset of images of digits - occluding digits with each other, and occluding digits with fragments. They used different combinations of networks, in this way forming four unique architectures.Their network outperformed feedforward networks both on tasks with occlusion and without occlusion.
+
+\subsection{Deep Predictive Coding}
+Inspired by the approach described in section \textbf{\ref{recfeedback}} is the Deep Predictive Coding Network (\cite{deeppcn}). The design of this network was motivated by the predictive coding theory, researched by \cite{predcod}. They defined it as the process of constantly learning and generating a new model of the environment. Their findings showed that the feedback connections from a higher layer carry the prediction of its lower-layer representation whereas feedforward connections carry the prediction error to its higher layer. The network aims to reduce the difference between bottom-up input and top-down prediction at every layer. In this way, the brain updates its representations to progressively refine its decisions, for example - the classification or segmentation of an object. This network was shown to always outperform feedforward network.
+
+\section{Summary}
+This chapter provided an explanation of concepts which are relevant for the implementation of this project. Firstly, it briefly described how autoencoders work. Subsequently, it illustrated the ideas behind transfer learning and introduced a visualisation technique called Class Activation Mapping. 
+Finally, it reviewed and compared previous approaches of using feedback in convolutional neural networks for vision.
+
+%==================================================================================================================================
+%\chapter{Analysis}
+%What is the problem that you want to solve, and how did you arrive at %it?
+%\section{Guidance}
+%Make it clear how you derived the constrained form of your problem via %a clear and logical process. 
+
+%The analysis chapter explains the process by which you arrive at a %concrete design. In software 
+%engineering projects, this will include a statement of the requirement %capture process and the
+%derived requirements.
+
+%In research projects, it will involve developing a design drawing on
+%the work established in the background, and stating how the space of %possible projects was
+%sensibly narrowed down to what you have done.
+
+%==================================================================================================================================
+\chapter{Approach}
+\todo{Explain Max pooling}
+
+\label{chap:approach}
+%How is this problem to be approached, without reference to %specific implementation details? 
+\section{Classifier}
+\label{app:classifier}
+We implemented a convolutional feedforward classifier as a starting point. In this way, we would have a baseline against which we could compare our feedback approaches. We will refer to this feedforward network as a simple classifier.
+
+We start with four convolutional layers, each followed by a MaxPool layer (\cite{maxpool}). 
+We also apply Batch Normalisation to the first two convolutional layers. Batch normalisation was developed by \cite{batchnorm} and improves training by normalizing the input layer through adjust and scaling the activations.
+
+We then use three fully connected layers, with dropout applied to the first two. We followed \cite{dropout}'s proposition to place it on the fully connected layers before the last one. By randomly ignoring some of the units and their connections with probability p, the network is prevented from overfitting and its generalization error is reduced. Consequently, it can be applied on all layers apart from the last one. In this way, the network is more robust and the generalization error is reduced.
+
+We apply the Leaky rectified linear unit (Leaky ReLU) activation function (\cite{activations}) to all layers with the exception of the last fully connected layer.
+Finally, we apply the LogSoftmax function to the last fully connected layer.
+
+Table \textbf{\ref{tab:classifier}} presents the full architecture of our baseline classifier.
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|}
+\hline
+\textbf{Layer}  & \textbf{in\_channels} & \textbf{out\_channels} & \textbf{kernel\_size} & \textbf{stride} & \textbf{padding} \\ \hline
+Conv2d          & 3                     & 32                     & 3                     & 3               & 1                \\ \hline
+BatchNorm2d     & 32                    &                        &                       &                 &                  \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 32                    & 64                     & 3                     & 3               & 1                \\ \hline
+BatchNorm2d     & 64                    &                        &                       &                 &                  \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 64                    & 128                    & 3                     & 3               & 1                \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 128                   & 256                    & 3                     & 3               & 1                \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Flatten         &                       &                        &                       &                 &                  \\ \hline
+Linear          & 12544                 & 500                    &                       &                 &                  \\ \hline
+Dropout(p=0.5)  &                       &                        &                       &                 &                  \\ \hline
+Linear          & 500                   & 256                    &                       &                 &                  \\ \hline
+Dropout(p=0.4)  &                       &                        &                       &                 &                  \\ \hline
+Linear          & 256                   & no. of classes         &                       &                 &                  \\ \hline
+Log\_Softmax    &                       &                        &                       &                 &                  \\ \hline
+\end{tabular}
+\caption{Architecture of plain classifier}
+\label{tab:classifier}
+\end{table}
+
+We decided to train the classifier using the Cross-Entropy loss function, which combines LogSoftMax and Negative Likelihood Loss in a single class. We chose this function because it measures the performance of a model which outputs a probability value, in our case - the probability of an image belonging to a particular class.
+We trained the classifier using the Adam optimizer.We chose Adam because it works well in practice and provides the best results compared with other optimization algorithms.(\cite{optimoverview})
+
+
+\section{Autoencoder}
+We then implemented an autoencoder which will generate new images from our input data. We use transposed convolutional layers so that our generated images can have the same dimensions as the original images.
+Finally, we apply the tanh activation function to the last transposed convolutional layer.
+
+We decided to train the autoencoder using the Mean Squared error loss function and the Adam optimizer. In comparison with Section \ref{app:classifier}, our outputs are now images (tensors in which each entry corresponds to the value a pixel) rather than vectors of probabilities. We chose this loss function because we are interested in measuring the difference between the input tensors and the generated tensors.
+
+Table \textbf{\ref{tab:autoencoder}} illustrates the full architecture of our autoencoder.
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|}
+\hline
+\textbf{Layer}  & \textbf{in\_channels} & \textbf{out\_channels} & \textbf{kernel\_size} & \textbf{stride} & \textbf{padding} \\ \hline
+Conv2d          & 3                     & 32                     & 3                     & 3               & 1                \\ \hline
+BatchNorm2d     & 32                    &                        &                       &                 &                  \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 32                    & 64                     & 3                     & 3               & 1                \\ \hline
+BatchNorm2d     & 64                    &                        &                       &                 &                  \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 64                    & 128                    & 3                     & 3               & 1                \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 128                   & 256                    & 3                     & 3               & 1                \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+ConvTranspose2d & 256                   & 128                    & 2                     & 2               & 0                \\ \hline
+ConvTranspose2d & 128                   & 64                     & 2                     & 2               & 0                \\ \hline
+ConvTranspose2d & 64                    & 32                     & 2                     & 2               & 0                \\ \hline
+ConvTranspose2d & 32                    & 3                      & 2                     & 2               & 0                \\ \hline
+Tanh            &                       &                        &                       &                 &                  \\ \hline
+\end{tabular}
+\caption{Architecture of autoencoder}
+\label{tab:autoencoder}
+\end{table}
+
+
+
+\section{Combined network}
+We then formed a combined network which acts simultaneously as a classifier and an autoencoder. We did this by adding the deconvolutional layers to the simple classifier. We then used the latent space as input to both the fully connected layers of the classifier as well as to the deconvolutional layers. In this way, classification and image generation were combined into a single network.Our hypothesis is that by training a network to do two tasks, it will form a more robust latent space and therefore performance will be improved for both networks.
+
+We trained this model by using a joint loss function which is formed by the sum of the classifier and autoencoder's individual losses. A potential problem with this approach is that these two losses may be in very different ranges. A solution to this problem is to take the loss values from all epochs when the classifier or autoencoder is trained on its own, and prior to summing them, subtract the mean and divide by the standard deviation. Therefore, losses will now be compatible and in the same range and we will be able to evaluate the performance of the combined.
+
+Table \textbf{\ref{tab:combined}} depicts our combined network architecture.
+
+
+
+\begin{table}[ht!]
+\centering
+\caption{Architecture of combined network}
+\begin{tabular}{|l|l|l|l|l|l|}
+\hline
+\textbf{Layer}  & \textbf{in\_channels} & \textbf{out\_channels} & \textbf{kernel\_size} & \textbf{stride} & \textbf{padding} \\ \hline
+Conv2d          & 3                     & 32                     & 3                     & 3               & 1                \\ \hline
+BatchNorm2d     & 32                    &                        &                       &                 &                  \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 32                    & 64                     & 3                     & 3               & 1                \\ \hline
+BatchNorm2d     & 64                    &                        &                       &                 &                  \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 64                    & 128                    & 3                     & 3               & 1                \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+Conv2d          & 128                   & 256                    & 3                     & 3               & 1                \\ \hline
+MaxPool2d       &                       &                        & 2                     & 2               &                  \\ \hline
+ConvTranspose2d & 256                   & 128                    & 2                     & 2               & 0                \\ \hline
+ConvTranspose2d & 128                   & 64                     & 2                     & 2               & 0                \\ \hline
+ConvTranspose2d & 64                    & 32                     & 2                     & 2               & 0                \\ \hline
+ConvTranspose2d & 32                    & 3                      & 2                     & 2               & 0                \\ \hline
+Tanh            &                       &                        &                       &                 &                  \\ \hline
+Flatten         &                       &                        &                       &                 &                  \\ \hline
+Linear          & 12544                 & 500                    &                       &                 &                  \\ \hline
+Dropout(p=0.5)  &                       &                        &                       &                 &                  \\ \hline
+Linear          & 500                   & 256                    &                       &                 &                  \\ \hline
+Dropout(p=0.4)  &                       &                        &                       &                 &                  \\ \hline
+Linear          & 256                   & no. of classes         &                       &                 &                  \\ \hline
+Log\_Softmax    &                       &                        &                       &                 &                  \\ \hline
+\end{tabular}
+\label{tab:combined}
+\end{table}
+
+\section{Feedback architectures}
+The approach we took to introduce feedback in the feedforward convolutional neural network was to recursively modify the inputs of the network using the output of the previous iteration. In this way, we are forcing the network to increase its attention on the object that it should classify. Consequently, we are aiming to remove as much of the background as possible and use a mask of the object for classification.
+
+We first do a forward pass of the network, in which just the original image is used as input. Next, for each subsequent pass we feed back the output from the previous iteration as input.
+
+\subsection{Subtractive feedback}
+\subsection{Multiplicative feedback}
+\subsection{Using generator output as a second input channel}
+\subsection{Using class activation mappings}
+\section{Summary}
+This chapter provided an in-depth look at the architecture of the networks we implemented. We first explained how our plain classifier and autoencoder are structured, then went on to describe the combined network used for reconstructing an image and classifying it. Finally, we describe how we will implement different cases of feedback.
+%Design should cover the abstract design in such a way that someone else might be able to do what you did, 
+%but with a different language or library or tool. This might include overall system architecture diagrams,
+%user interface designs (wireframes/personas/etc.), protocol specifications, algorithms, data set design choices,
+%among others. Specific languages, technical choices, libraries and such like should not usually appear in the design. These are implementation details.
+
+
+%==================================================================================================================================
+\chapter{Implementation}
+\label{chap:implementation}
+\section{Overview}
+The project was developed using PyTorch which is a library developed by \cite{pytorch}. We chose this framework because it has built-in support for Google Colab and the broad number of resources available for it. PyTorch provides a package called \textit{nn} which provides us with the \textit{Module} class - our neural networks inherit from this class. It also gives us access to loss functions. Another package called \textit{optim} implements optimization algorithms such as Stochastic Gradient Descent, developed by \cite{SGD}, and Adaptive Moment Estimation, also known as Adam.(\cite{adam})
+
+PyTorch also provides us with a \textit{DataLoader} class - object of this class will contain our data which we will feed into our network after preprocessing. The DataLoader takes as parameters
+\begin{itemize}
+    \item a \textit{Dataset} - this can be one of the readily available datasets in PyTorch or a custom dataset of our own
+    \item batch size - the number of samples our network goes through before updating its weights
+    \item a \textit{Sampler} - an optional parameter which specifies which indices of the Dataset will be loaded - we use this to make sure that each class has the same number of examples to avoid class imbalance (\cite{classimb})
+\end{itemize}
+
+
+Firstly, we set aside a fraction of the training set which will be used for validation. We used a random seed to ensure reproducibility of the results, in particular to ensure that we take the same fraction for validation on each run. We then resized the images and convert them to tensors so that they can be fed into the network.
+
+Subsequently, we developed a training and validation script which takes the following parameters
+\begin{itemize}
+    \item A model of type \textit{nn.Module}
+    \item An optimizer
+    \item A loss function
+    \item A mode - this is a text description of the type of network that we are using, e.g. plain classifier or subtractive feedback
+\end{itemize}
+The function returns the same model with the updated weights as well as a list of lists of training/validation losses and accuracies.
+
+We iterate over the training and validation data for 50 epochs. We chose this number as we explored that it is enough number of epochs so that our models can converge.
+The following steps are common for training all of our models
+\begin{itemize}
+    \item We first clear out any accumulated gradients using the \textit{zero\_grad} method of the optimizer - used only when training
+    \item We then perform the calculations to make a prediction - this is done by calling the \textit{forward} method of the model using the input data as a parameter - this method call is usually shortened to \textit{model(input\_data)}
+    \item We calculate the loss between the inputs and targets
+    \item We calculate the derivative of the loss using the \textit{backward} function - this is done only when training
+    \item We update the parameters of the network using the  \textit{optimizer.step()} function
+    \item Finally, we calculate the loss and accuracy over all batches for one epoch
+\end{itemize}
+
+The test script follows a similar pattern. In addition to these calculations, we also calculate a confusion matrix for the test set which gives us the number of correctly classified objects as well as common misclassifications. In the case of using feedback, we also calculate accuracy-per-feedback iteration so that we can see the effect of increasing the number of iterations.
+
+We repeated each training run 3 times so that we can be sure that we are getting consistent results. We trained all of our networks using identical conditions - we trained them for 50 epochs, used the Adam optimizer with a learning rate of 0.001. We explored using learning rates of 0.01 and 0.0001, however 0.001 provided the best results. Furthermore, this learning rate is recommended by the documentation of PyTorch.
+
+%What did you do to implement this idea, and what technical achievements %did you make?
+
+\section{Simple classifier}
+\textbf{Algorithm \ref{alg:plain}} describes the algorithm for training a plain convolutional network.
+\begin{algorithm}
+    \DontPrintSemicolon
+    \KwData{$trainloader$, a collection of all batches of input images\newline$network$, our neural network}
+    \KwResult{$labels$ - the predicted labels for these images.}
+    \CommentSty{\color{black}}
+    \Begin{
+        %$s \longleftarrow []$\;
+        %$p \longleftarrow f_X(x)$\;
+        %$i \longleftarrow 0$\;
+        \For{images, labels in trainloader}
+        {
+            $optimizer.zero\_grad()$ \tcp{clear gradients}\; 
+            $generated,predicted \longleftarrow network.forward(images)$\;
+            $\alpha \longleftarrow 0.1$\;
+            $lossclass \longleftarrow loss(predicted,labels)$\;
+            $(lossgen+lossclass).backward()$\;
+            $optimizer.step()$
+            \tcp{update parameters}
+            %$a \longleftarrow \frac{p^\prime}{p}$\;
+            %$r \longleftarrow U(0,1)$\;
+            %\If{$r<a$}
+            %{
+                %$x \longleftarrow x^\prime$\;
+                %$p \longleftarrow f_X(x)$\;
+                %$i \longleftarrow i+1$\;
+                %append $x$ to $s$\;
+            %}
+        }
+    }
+    
+\caption{The algorithm for training a simple convolutional neural netowrk. }\label{alg:plain}
+\end{algorithm}
+
+
+\section{Combined model}
+\textbf{Algorithm \ref{alg:combined}} describes the algorithm for training a combined convolutional neural network to reconstruct and classify images.
+
+\begin{algorithm}
+    \DontPrintSemicolon
+    \KwData{$trainloader$, a collection of all batches of input images\newline$network$, our neural network}
+    \KwResult{$generated$, a batch of reconstructed images\newline
+    $labels$ - the predicted labels for these images.}
+    \CommentSty{\color{black}}
+    \Begin{
+        %$s \longleftarrow []$\;
+        %$p \longleftarrow f_X(x)$\;
+        %$i \longleftarrow 0$\;
+        \For{images, labels in trainloader}
+        {
+            $optimizer.zero\_grad()$ \tcp{clear gradients}\; 
+            $generated,predicted \longleftarrow network.forward(images)$\;
+            $\alpha \longleftarrow 0.1$\;
+            $lossgen \longleftarrow loss(generated,images)$\;
+            $lossclass \longleftarrow loss(predicted,labels)$\;
+            $(lossgen+lossclass).backward()$\;
+            $optimizer.step()$
+            \tcp{update parameters}
+            %$a \longleftarrow \frac{p^\prime}{p}$\;
+            %$r \longleftarrow U(0,1)$\;
+            %\If{$r<a$}
+            %{
+                %$x \longleftarrow x^\prime$\;
+                %$p \longleftarrow f_X(x)$\;
+                %$i \longleftarrow i+1$\;
+                %append $x$ to $s$\;
+            %}
+        }
+    }
+    
+\caption{The algorithm for training a combined convolutional neural to reconstruct and classify images. }\label{alg:combined}
+\end{algorithm}
+
+
+
+
+
+
+\section{Feedback architectures}
+\subsection{Subtractive feedback}
+
+\textbf{Algorithm \ref{alg:subtractive}} describes the algorithm for training a convolutional neural network using subtractive feedback in pseudocode.
+
+\begin{algorithm}
+    \DontPrintSemicolon
+    \KwData{$trainloader$, a collection of all batches of input images\newline$network$, our neural network}
+    \KwResult{$generated$, a batch of reconstructed images\newline
+    $labels$ - the predicted labels for these images.}
+    \CommentSty{\color{black}}
+    \Begin{
+        %$s \longleftarrow []$\;
+        %$p \longleftarrow f_X(x)$\;
+        %$i \longleftarrow 0$\;
+        \For{images, labels in trainloader}
+        {
+            $optimizer.zero\_grad()$ \tcp{clear gradients}\; 
+            $generated,predicted \longleftarrow network.forward(images)$\;
+            $\alpha \longleftarrow 0.1$\;
+            \tcp{n = number of iterations}
+            \For{i in range(n)}
+            {
+                $generated,predicted \longleftarrow network.forward(images-generated*\alpha)$\;
+                $\alpha \longleftarrow alpha + 0.1$\;
+            }
+            $lossgen \longleftarrow loss(generated,images)$\;
+            $lossclass \longleftarrow loss(predicted,labels)$\;
+            $(lossgen+lossclass).backward()$\;
+            $optimizer.step()$
+            \tcp{update parameters}
+            %$a \longleftarrow \frac{p^\prime}{p}$\;
+            %$r \longleftarrow U(0,1)$\;
+            %\If{$r<a$}
+            %{
+                %$x \longleftarrow x^\prime$\;
+                %$p \longleftarrow f_X(x)$\;
+                %$i \longleftarrow i+1$\;
+                %append $x$ to $s$\;
+            %}
+        }
+    }
+    
+\caption{The algorithm for training a convolutional neural network using subtractive feedback. }\label{alg:subtractive}
+\end{algorithm}
+
+
+
+\subsection{Multiplicative feedback}
+\textbf{Algorithm \ref{alg:multiplicative}} describes the algorithm for training a convolutional neural network using multiplicative feedback in pseudocode.
+
+
+\begin{algorithm}
+    \DontPrintSemicolon
+    \KwData{$trainloader$, a collection of all batches of input images\newline$network$, our neural network}
+    \KwResult{$generated$, a batch of reconstructed images\newline
+    $labels$ - the predicted labels for these images.}
+    \Begin{
+        \For{images, labels in trainloader}
+        {
+            $optimizer.zero\_grad()$ \tcp{clear gradients}\;
+            $generated,predicted \longleftarrow network.forward(images)$\;
+            $\alpha \longleftarrow 0.1$\;
+            \tcp{n = number of iterations}
+            \For{i in range(n)} 
+            {
+                $generated,predicted \longleftarrow network.forward(images*generated*\alpha)$\;
+                $\alpha \longleftarrow alpha + 0.1$\;
+            }
+            $lossgen \longleftarrow loss(generated,images)$\;
+            $lossclass \longleftarrow loss(predicted,labels)$\;
+            $lossgen.backward()$\;
+            $optimizer.step()$ \tcp{update parameters}
+        }
+    }
+    
+\caption{The algorithm for training a convolutional neural network using multiplicative feedback. }\label{alg:multiplicative}
+\end{algorithm}
+
+
+\subsection{Using generator output as a second input channel}
+\subsection{Using class activation mappings}
+
+\section{Summary}
+This chapter discussed the technical details of implementing the project. We first discussed base classes which are implemented and then commented on how the how the data is preprocessed before being fed into the network, then moved on to review the way the models are trained and tested. Finally, this chapter outlined how feedback is implemented in each scenario. 
+
+%You can't talk about everything. Cover the high level first, then cover %important, relevant or impressive details.
+
+%These points apply to the whole dissertation, not just this chapter.
+
+%\emph{Always} refer to figures included, like Figure %\ref{fig:relu}, in the body of the text. Include full, %explanatory captions and make sure the figures look good on the page.
+%You may include multiple figures in one float, as in Figure %\ref{fig:synthetic}, using \texttt{subcaption}, which is enabled in the template.
+
+
+% Figures are important. Use them well.
+%\begin{figure}[htb]
+    %\centering
+    %\includegraphics[width=0.5\linewidth]{images/relu.pdf}    
+
+    %\caption{In figure captions, explain what the reader is %looking at: ``A schematic of the rectifying linear unit, %where $a$ is the output amplitude,
+    %$d$ is a configurable dead-zone, and $Z_j$ is the input %signal'', as well as why the reader is looking at this: 
+    %``It is notable that there is no activation \emph{at all} %below 0, which explains our initial results.'' 
+    %\textbf{Use vector image formats (.pdf) where possible}. Size figures appropriately, and do not make them over-large or too small to read.
+    %}
+
+    % use the notation fig:name to cross reference a figure
+    %\label{fig:relu} 
+%\end{figure}
+
+
+%\begin{figure}[htb] 
+    %\centering
+    %\begin{subfigure}[b]{0.45\textwidth}
+     %   \includegraphics[width=\textwidth]{images/synthetic.png}
+     %   \caption{Synthetic image, black on white.}
+     %   \label{fig:syn1}
+    %\end{subfigure}
+    %~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    %\begin{subfigure}[b]{0.45\textwidth}
+     %   \includegraphics[width=\textwidth]{images/synthetic_2.png}
+     %   \caption{Synthetic image, white on black.}
+      %  \label{fig:syn2}
+    %\end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+    %(or a blank line to force the subfigure onto a new line)    
+    %\caption{Synthetic test images for edge detection algorithms. %\subref{fig:syn1} shows various gray levels that require an %adaptive algorithm. \subref{fig:syn2}
+    %shows more challenging edge detection tests that have %crossing lines. Fusing these into full segments typically %This is an example of using subfigures, with \texttt{subref}s %in the caption.
+    %}\label{fig:synthetic}
+%\end{figure}
+
+%\clearpage
+
+
+%Equations should be typeset correctly and precisely. Make sure you get parenthesis sizing correct, and punctuate equations correctly 
+%(the comma is important and goes \textit{inside} the equation block). Explain any symbols used clearly if not defined earlier. 
+
+%For example, we might define:
+%\begin{equation}
+    %\hat{f}(\xi) = \frac{1}{2}\left[ \int_{-\infty}^{\infty} f(x) e^{2\pi i x \xi} \right],
+%\end{equation}    
+%where $\hat{f}(\xi)$ is the Fourier transform of the time domain %signal $f(x)$.
+
+
+%Algorithms can be set using \texttt{algorithm2e}, as in Algorithm \ref{alg:metropolis}.
+
+% NOTE: line ends are denoted by \; in algorithm2e
+%\begin{algorithm}
+    %\DontPrintSemicolon
+    %\KwData{$f_X(x)$, a probability density function returing the density at $x$.\; $\sigma$ a standard deviation specifying the spread of the proposal distribution.\;
+    %$x_0$, an initial starting condition.}
+    %\KwResult{$s=[x_1, x_2, \dots, x_n]$, $n$ samples approximately drawn from a distribution with PDF $f_X(x)$.}
+    %\Begin{
+        %$s \longleftarrow []$\;
+        %$p \longleftarrow f_X(x)$\;
+        %$i \longleftarrow 0$\;
+        %\While{$i < n$}
+        %{
+         %   $x^\prime \longleftarrow \mathcal{N}(x, \sigma^2)$\;
+          %  $p^\prime \longleftarrow f_X(x^\prime)$\;
+         %   $a \longleftarrow \frac{p^\prime}{p}$\;
+        %    $r \longleftarrow U(0,1)$\;
+         %   \If{$r<a$}
+         %   {
+        %        $x \longleftarrow x^\prime$\;
+         %       $p \longleftarrow f_X(x)$\;
+         %       $i \longleftarrow i+1$\;
+         %       append $x$ to $s$\;
+        %    }
+      %  }
+   % }
+    
+%\caption{The Metropolis-Hastings MCMC algorithm for drawing %samples from arbitrary probability distributions, 
+%specialised for normal proposal distributions $q(x^\prime|x) = %\mathcal{N}(x, \sigma^2)$. The symmetry of the normal %distribution means the acceptance rule takes the simplified %form.}\label{alg:metropolis}
+%\end{algorithm}
+
+
+
+%If you need to include tables, like Table \ref{tab:operators}, %use a tool like https://www.tablesgenerator.com/ to generate the %table as it is
+%extremely tedious otherwise. 
+
+%\begin{table}[]
+    %\caption{The standard table of operators in Python, along with their functional equivalents from the \texttt{operator} package. Note that table
+    %captions go above the table, not below. Do not add additional rules/lines to tables. }\label{tab:operators}
+    %\tt 
+    %\rowcolors{2}{}{gray!3}
+    %\begin{tabular}{@{}lll@{}}
+    %\toprule
+    %\textbf{Operation}    & \textbf{Syntax}                & \textbf{Function}                            \\ %\midrule % optional rule for header
+    %Addition              & \texttt{a + b}                          & \texttt{add(a, b)}                                    \\
+    %Concatenation         & \texttt{seq1 + seq2}                    & \texttt{concat(seq1, seq2)}                           \\
+    %Containment Test      & \texttt{obj in seq}                     & \texttt{contains(seq, obj)}                           \\
+    %Division              & \texttt{a / b}                          & \texttt{div(a, b) }  \\
+    %Division              & \texttt{a / b}                          & \texttt{truediv(a, b) } \\
+    %Division              & \texttt{a // b}                         & \texttt{floordiv(a, b)}                               \\
+    %Bitwise And           & \texttt{a \& b}                         & \texttt{and\_(a, b)}                                  \\
+    %Bitwise Exclusive Or  & \texttt{a \textasciicircum b}           & \texttt{xor(a, b)}                                    \\
+    %Bitwise Inversion     & \texttt{$\sim$a}                        & \texttt{invert(a)}                                    \\
+    %Bitwise Or            & \texttt{a | b}                          & \texttt{or\_(a, b)}                                   \\
+    %Exponentiation        & \texttt{a ** b}                         & \texttt{pow(a, b)}                                    \\
+    %Identity              & \texttt{a is b}                         & \texttt{is\_(a, b)}                                   \\
+    %Identity              & \texttt{a is not b}                     & \texttt{is\_not(a, b)}                                \\
+    %Indexed Assignment    & \texttt{obj{[}k{]} = v}                 & \texttt{setitem(obj, k, v)}                           \\
+    %Indexed Deletion      & \texttt{del obj{[}k{]}}                 & \texttt{delitem(obj, k)}                              \\
+    %Indexing              & \texttt{obj{[}k{]}}                     & \texttt{getitem(obj, k)}                              \\
+    %Left Shift            & \texttt{a \textless{}\textless b}       & \texttt{lshift(a, b)}                                 \\
+    %Modulo                & \texttt{a \% b}                         & \texttt{mod(a, b)}                                    \\
+    %Multiplication        & \texttt{a * b}                          & \texttt{mul(a, b)}                                    \\
+    %Negation (Arithmetic) & \texttt{- a}                            & \texttt{neg(a)}                                       \\
+    %Negation (Logical)    & \texttt{not a}                          & \texttt{not\_(a)}                                     \\
+    %Positive              & \texttt{+ a}                            & \texttt{pos(a)}                                       \\
+    %Right Shift           & \texttt{a \textgreater{}\textgreater b} & \texttt{rshift(a, b)}                                 \\
+    %Sequence Repetition   & \texttt{seq * i}                        & \texttt{repeat(seq, i)}                               \\
+    %Slice Assignment      & \texttt{seq{[}i:j{]} = values}          & \texttt{setitem(seq, slice(i, j), values)}            \\
+    %Slice Deletion        & \texttt{del seq{[}i:j{]}}               & \texttt{delitem(seq, slice(i, j))}                    \\
+    %Slicing               & \texttt{seq{[}i:j{]}}                   & \texttt{getitem(seq, slice(i, j))}                    \\
+    %String Formatting     & \texttt{s \% obj}                       & \texttt{mod(s, obj)}                                  \\
+    %Subtraction           & \texttt{a - b}                          & \texttt{sub(a, b)}                                    \\
+    %Truth Test            & \texttt{obj}                            & \texttt{truth(obj)}                                   \\
+    %Ordering              & \texttt{a \textless b}                  & \texttt{lt(a, b)}                                     \\
+    %Ordering              & \texttt{a \textless{}= b}               & \texttt{le(a, b)}                                     \\
+    % \bottomrule
+    %\end{tabular}
+    %\end{table}
+
+%Avoid putting large blocks of code in the report (more than a page in one block, for example). Use syntax highlighting if possible, as in Listing \ref{lst:callahan}.
+
+%\begin{lstlisting}[language=python, float, caption={The algorithm for packing the $3\times 3$ outer-totalistic binary CA successor rule into a 
+    %$16\times 16\times 16\times 16$ 4 bit lookup table, running an equivalent, notionally 16-state $2\times 2$ CA.}, label=lst:callahan]
+    %def create_callahan_table(rule="b3s23"):
+        %"""Generate the lookup table for the cells."""        
+        %s_table = np.zeros((16, 16, 16, 16), dtype=np.uint8)
+        %birth, survive = parse_rule(rule)
+
+        %# generate all 16 bit strings
+        %for iv in range(65536):
+            %bv = [(iv >> z) & 1 for z in range(16)]
+            %a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p = bv
+
+            %# compute next state of the inner 2x2
+            %nw = apply_rule(f, a, b, c, e, g, i, j, k)
+            %ne = apply_rule(g, b, c, d, f, h, j, k, l)
+            %sw = apply_rule(j, e, f, g, i, k, m, n, o)
+            %se = apply_rule(k, f, g, h, j, l, n, o, p)
+
+            %# compute the index of this 4x4
+            %nw_code = a | (b << 1) | (e << 2) | (f << 3)
+            %ne_code = c | (d << 1) | (g << 2) | (h << 3)
+            %sw_code = i | (j << 1) | (m << 2) | (n << 3)
+            %se_code = k | (l << 1) | (o << 2) | (p << 3)
+
+            %# compute the state for the 2x2
+            %next_code = nw | (ne << 1) | (sw << 2) | (se << 3)
+
+            %# get the 4x4 index, and write into the table
+            %s_table[nw_code, ne_code, sw_code, se_code] = next_code
+
+        %return s_table
+
+%\end{lstlisting}
+
+%==================================================================================================================================
+\chapter{Evaluation}
+\label{chap:evaluation}
+%How good is your solution? How well did you solve the general problem, %and what evidence do you have to support that?
+\section{Overview}
+We evaluated the performance of the project using \cite{Samagaio}'s dataset as well as SVHN(\cite{svhn}) and CIFAR(\cite{CIFAR}). 
+
+\cite{Samagaio}'s dataset is called Intern's Objects. It contains frames from videos of 20 objects of different shapes and colours. The videos were taken against the same background. This allows the neural networks to focus only on the features of the objects themselves. In this way, we are certain that the background is not contributing to object classification. The dataset was divided into training and testing datasets, each of which comprised of different video clips. Due to memory constraints, we used a subset with randomly chosen images from each class for evaluating the implemented models.
+
+We also used two datasets which are readily available in PyTorch.
+SVHN (Street View House Numbers) is a dataset of colour images which show house numbers. The task of the dataset is to recognise the digit located at the centre of the image.
+CIFAR includes 60 000 32x32 images, comprising 10 objects. There are 50 000 training images and 10 000 test images.
+
+For each implemented network we measured loss and accuracy on the training and validation datasets. We then summarised these in graphs so that we can analyse them easily. Finally, we evaluated our models on the test dataset by looking at test loss as well as overall accuracy and per-class accuracy. We then looked at a confusion matrix so that we can analyse common misclassifications of objects. In the case of evaluating models which utilise feedback, we visualised the generated images to see which pixels contribute to the classification the most. 
+
+
+
+
+\section{Simple classifier}
+\section{Combined model}
+\section{Feedback architectures}
+\subsection{Subtractive feedback}
+\subsection{Multiplicative feedback}
+\subsection{Using generator output as a second input channel}
+\subsection{Using class activation mappings}
+\section{Summary}
+This chapter commented on the evaluation of the project.Firstly, we described the main dataset that we used for evaluation. Then, the overall evaluation strategy was discussed. Subsequently, numerical results such as loss, accuracy and confusion matrices were presented for each type of network. Finally, we provided an analysis of these results.
+
+%\begin{itemize}
+%    \item
+%        Ask specific questions that address the general problem.
+%    \item
+%        Answer them with precise evidence (graphs, numbers, statistical
+%        analysis, qualitative analysis).
+%    \item
+%        Be fair and be scientific.
+%    \item
+%        The key thing is to show that you know how to evaluate your %work, not
+%        that your work is the most amazing product ever.
+%\end{itemize}
+
+%Make sure you present your evidence well. Use appropriate %visualisations, 
+%reporting techniques and statistical analysis, as appropriate. The %point is not
+%to dump all the data you have but to present an argument well supported %by evidence gathered.
+
+%If you use numerical evidence, specify reasonable numbers of %significant digits; don't state ``18.41141\% of users were successful'' %if you only had 20 users. If you average \textit{anything}, present %both a measure of central tendency (e.g. mean, median) \textit{and} a %measure of spread (e.g. standard deviation, min/max, interquartile %range).
+
+%You can use \texttt{siunitx} to define units, space numbers neatly, and %set the precision for the whole LaTeX document. 
+
+% setup siunitx to have two decimal places
+%\sisetup{
+%	round-mode = places,
+%	round-precision = 2
+%}
+
+%For example, these numbers will appear with two decimal places: %\num{3.141592}, \num{2.71828}, and this one will appear with reasonable %spacing \num{1000000}.
+
+
+
+%If you use statistical procedures, make sure you understand the process %you are using,
+%and that you check the required assumptions hold in your case. 
+
+%If you visualise, follow the basic rules, as illustrated in Figure %\ref{fig:boxplot}:
+%\begin{itemize}
+%\item Label everything correctly (axis, title, units).
+%\item Caption thoroughly.
+%\item Reference in text.
+%\item \textbf{Include appropriate display of uncertainty (e.g. error %bars, Box plot)}
+%\item Minimize clutter.
+%\end{itemize}
+
+%See the file \texttt{guide\_to\_visualising.pdf} for further %information and guidance.
+
+%\begin{figure}[htb]
+    %\centering
+    %\includegraphics[width=1.0\linewidth]{images/boxplot_finger_distance.pdf}    
+
+    %\caption{Average number of fingers detected by the touch sensor at different heights above the surface, averaged over all gestures. Dashed lines indicate
+    %the true number of fingers present. The Box plots include %bootstrapped uncertainty notches for the median. It is clear %that the device is biased toward 
+    %undercounting fingers, particularly at higher $z$ distances.
+    %}
+
+    % use the notation fig:name to cross reference a figure
+    %\label{fig:boxplot} 
+%\end{figure}
+
+
+%==================================================================================================================================
+\chapter{Conclusion}
+\label{chap:conclusion}
+%Summarise the whole project for a lazy reader who didn't read the rest (e.g. a prize-awarding committee). This chapter should be short in most dissertations; maybe one to three pages.
+%\begin{itemize}
+    %\item
+        %Summarise briefly and fairly.
+    %\item
+        %You should be addressing the general problem you introduced in the
+        %Introduction.        
+    %\item
+        %Include summary of concrete results (``the new compiler ran 2x
+        %faster'')
+    %\item
+        %Indicate what future work could be done, but remember: \textbf{you
+        %won't get credit for things you haven't done}.
+%\end{itemize}
+
+\section{Summary}
+%Summarise what you did; answer the general questions you asked in the introduction. What did you achieve? Briefly describe what was built and summarise the evaluation results.
+
+\section{Reflection}
+%Discuss what went well and what didn't and how you would do things differently if you did this project again.
+
+\section{Future work}
+%Discuss what you would do if you could take this further -- where would the interesting directions to go next be? (e.g. you got another year to work on it, or you started a company to work on this, or you pursued a PhD on this topic)
+
+%==================================================================================================================================
+%
+% 
+%==================================================================================================================================
+%  APPENDICES  
+
+\begin{appendices}
+
+\chapter{Appendices}
+
+%Use separate appendix chapters for groups of ancillary material that %support your dissertation. 
+%Typical inclusions in the appendices are:
+
+%\begin{itemize}
+%\item
+ % Copies of ethics approvals (you must include these if you needed to get them)
+%\item
+  %Copies of questionnaires etc. used to gather data from subjects. %Don't include
+  %voluminous data logs; instead submit these electronically alongside your source code.
+%\item
+  %Extensive tables or figures that are too bulky to fit in the main body of
+  %the report, particularly ones that are repetitive and summarised in the body.
+%\item Outline of the source code (e.g. directory structure), 
+   %or other architecture documentation like class diagrams.
+%\item User manuals, and any guides to starting/running the software. 
+%Your equivalent of \texttt{readme.md} should be included.
+
+%\end{itemize}
+
+%\textbf{Don't include your source code in the appendices}. It will be
+%submitted separately.
+
+
+
+\end{appendices}
+
+%==================================================================================================================================
+%   BIBLIOGRAPHY   
+
+% The bibliography style is agsm (Harvard)
+% The bibliography always appears last, after the appendices.
+
+\bibliographystyle{agsm}
+
+% Force the bibliography not to be numbered
+\renewcommand{\thechapter}{0} 
+\bibliography{l4proj}
+
+\end{document}
