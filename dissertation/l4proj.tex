@@ -8,6 +8,7 @@
 % the overall format (e.g. don't change the margins or the reference style).
 %
 \usepackage{amsmath}
+\usepackage{float}
 \usepackage{pdfpages} % if you want to include a PDF for an ethics checklist, for example
 %
 %
@@ -25,23 +26,14 @@
 %==============================================================================
 %% ABSTRACT
 \begin{abstract}
-    Every abstract follows a similar pattern. Motivate; set aims; describe work; explain results.
     \vskip 0.5em
-    ``XYZ is bad. This project investigated ABC to determine if it was better. 
-    ABC used XXX and YYY to implement ZZZ. This is particularly interesting as XXX and YYY have
-    never been used together. It was found that  
-    ABC was 20\% better than XYZ, though it caused rabies in half of subjects.''
+    Current image segmentation models require data annotated by hand which may be expensive. We investigated whether feedback is a suitable approach to generate such masks in an unsupervised manner and in this way possible improve classification rate by focusing the attention of the network to the object. A motivation for this approach is that current feedforward networks do not employ feedback connections as opposed to human vision which uses feedforward, feedback and lateral connections. We extended a feedforward convolutional network to be able to reconstruct images as well. We recursively used a combination of image and the reconstructed images as inputs to the network. In this way, background is suppressed and the object is highlighted. We demonstrated an improvement of the classification rate when employing feedback and in one of the cases we illustrated that the network was able to refocus its attention on the object at hand.
 \end{abstract}
 
 %==============================================================================
 %% ACKNOWLEDGEMENTS
 \chapter*{Acknowledgements}
-% Enter any acknowledgements here. This is optional; you may leave this blank if you wish,
-% or remove the entire chapter
-%
-% We give thanks to the Gods of LaTeX, who in their eternal graciousness, 
-% have granted that this document may compile without errors or overfull hboxes.
-I would like to thank my supervisor, Dr Jan-Paul Siebert, and Piotr Ozimek, for their advice and support. 
+I would like to thank my supervisor, Dr Jan-Paul Siebert, and Piotr Ozimek, for their advice and support.
 %
 
 %==============================================================================
@@ -101,116 +93,65 @@ I would like to thank my supervisor, Dr Jan-Paul Siebert, and Piotr Ozimek, for 
 \chapter{Introduction}
 \label{chap:intro}
 % reset page numbering. Don't remove this!
-\pagenumbering{arabic} 
+\pagenumbering{arabic}
+This dissertation describes the development of feedback in convolutional neural networks used for computer vision problems. It describes the implementation of four feedback models and provides an evaluation of them. 
 
-%\todo{}
-% You can use \todo{} to mark text that needs to be fixed. Anything inside will appear as highlighted 
-% text in the final copy, and you will also get warnings when you compile (so you don't
-% forget to take them out!)
+The following chapter sets out the motivation and aims for this project. Furthermore, it describes the achievements made during its implementation. Finally, it briefly explains the structure of the rest of this dissertation.
 
-%Why should the reader care about what are you doing and what are you %actually doing?
 \section{Motivation}
 The majority of modern state-of-the-art deep learning approaches in computer vision use convolutional neural networks (\cite{convnets}). The main reason for the success of these techniques is that hardware (\cite{GPU}) and data are easily accessible. Most of these models extract features using feedforward connections between convolutional layers. 
 
-While these models have been widely successful, \cite{feedbackcon} showed that human vision utilises feedback and recurrent connections in addition to feedforward connections. Furthermore, \cite{cognitive} and \cite{objectrec} demonstrated that feedback processing improves the ability to recognise objects and enables cognitive processes to influence perception.
+While these models have been widely successful, \cite{feedbackcon} showed that human vision utilises feedback and recurrent connections in addition to feedforward connections. They explained that feedback connections transmit information to the visual cortex which is not available via feedforward connections. Furthermore, \cite{cognitive} and \cite{objectrec} demonstrated that feedback processing improves the ability to recognise objects and enables cognitive processes to influence perception.
 Therefore, feedforward networks can be extended to use feedback connections so that they can be a better approximation to human vision.
 
 In the case of neural networks, feedback is defined as an iterative process - using the output of a system as the input to the same system on the next iteration. This is a potential mechanism to improve the results obtained in visual processing tasks compared to feedforward networks. An example of such a task is segmentation of objects.
 
-%\textbf{Motivate} first, then state the general problem clearly. 
+Current state-of-the-art image segmentation implementations such as Mask R-CNN (\cite{maskrcnn}) require segmentation masks to be produced by hand. This approach might be time consuming and expensive. Therefore, we will investigate whether feedback is an appropriate approach to generate a mask in an unsupervised manner, thus removing the need for hand segmentation and possibly improving the classification accuracy of a network trained in a feedforward fashion.
 
 \section{Aims}
-The aim of this project is to examine different cognitive feedback mechanisms which will be used in convolutional networks for solving problems in computer vision. This exploration is done with the view to build an end-to-end neural network which will automatically segment the classified object by enhancing relevant information or suppressing insignificant parts of the image. Another purpose of this project is to investigate whether introducing feedback contributes to an increase in the performance of the network.
+The aim of this project is to examine different cognitive feedback mechanisms which will be used in convolutional networks for solving problems in computer vision. This exploration is done with the view to build an end-to-end neural network which will automatically segment the classified object by enhancing relevant information or suppressing insignificant parts of the image. In this way, a segmentation mask will be created in an unsupervised manner. Another purpose of this project is to investigate whether introducing feedback contributes to an increase in the overall performance of the network.
 
-%This is the key question for any writing. Your reader:
+\section{Achievements}
+We investigated four approaches of incorporating feedback within convolutional neural networks. These techniques involved recursively modifying the input images to the network using the output of a previous pass through the network. We implemented the following types of feedback networks
 
-\section{Summary}
-This chapter motivated the advantages of using feedback in convolutional neural networks and outlined the aims of the project as well.
+\begin{itemize}
+    \item Subtractive feedback - the result of the subtraction of the original image and a generated output is used as input to the network on each iteration
+    \item Multiplicative feedback - the product of the original image and a generated output is used as input to the network on each iteration
+    \item Feedback network which takes a 6-channel image, composed of the original image and a generated output as input
+    \item Feedback network which takes as input the original image multiplied by a heatmap which highlights parts of the image that contribute to the classification of an object 
+\end{itemize}
+We implemented and evaluated these approaches. While we were not fully successful in generating a mask of the object, two of these approaches still demonstrated an improvement of the accuracy compared with the accuracy of a convolutional network with no feedback mechanism included - namely using subtractive feedback and a network taking a 6-channel image. Furthermore, the last approach showed that the network can shift its attention towards the object being classified.
+
+\textbf{Figure \ref{fig:feedbackdiagram}} illustrates how feedback will be implemented in our convolutional neural networks.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.1\linewidth]{images/Feedback diagram.png}
+    \caption{A diagram of the design of feedback in convolutional neural networks}
+    \label{fig:feedbackdiagram} 
+\end{figure}
+
+\section{Outline}
+%This chapter motivated the advantages of using feedback over feedforward convolutional neural networks, outlined the main aims - to automatically segment the object being classified and to examine whether this mask can be used to improve accuracy. Finally, we described our achievements and provided a high-level diagram of the overall design of our networks.
+
 The rest of the dissertation is structured as follows.
 \begin{itemize}
-    \item \textbf{Chapter \ref{chap:background}} provides background on relevant topics for this project such as autoencoders, transfer learning, class activation mappings and existing feedback architectures.
-    \item \textbf{Chapter \ref{chap:approach}} discusses the approach taken and the design decisions made for implementing feedback in neural networks. \item \textbf{Chapter \ref{chap:implementation}} presents technical details about each implemented feedback architecture.
-    \item \textbf{Chapter \ref{chap:evaluation}} provides an evaluation strategy, presents and discusses numerical results. This includes metrics such as loss, accuracy and confusion matrices. It also explores which hyperparameters influence the performance of the networks the most.
+    \item \textbf{Chapter \ref{chap:background}} provides background on relevant topics for this project such as autoencoders, transfer learning, class activation mappings, recurrent neural networks and existing feedback architectures.
+    \item \textbf{Chapter \ref{chap:approach}} describes and justifies the design of our networks.
+    \item \textbf{Chapter \ref{chap:implementation}} presents the packages and classes that are available in Pytorch. Furthermore, it outlines a strategy for training and testing and explains the implementation of our networks in technical detail.
+    \item \textbf{Chapter \ref{chap:evaluation}}  provides a description of the datasets we used and sets out an evaluation strategy, presents and discusses numerical results. This includes metrics such as loss, accuracy and confusion matrices. In addition, it illustrates and comments on the reconstructed images.
     \item Finally, \textbf{Chapter \ref{chap:conclusion}} summarises and reflects on the project. In addition, it proposes ideas for future work.
 \end{itemize}
  
-
-%\begin{itemize}
-    %\item
-    %is a trained computer scientist: \emph{don't explain basics}.
-    %\item
-    %has limited time: \emph{keep on topic}.
-    %\item
-    %has no idea why anyone would want to do this: \emph{motivate clearly}
-    %\item
-    %might not know \emph{anything} about your project in particular:
-    %\emph{explain your project}.
-    %\item
-    %but might know precise details and check them: \emph{be precise and
-    %strive for accuracy.}
-    %\item
-    %doesn't know or care about you: \emph{personal discussions are
-    %irrelevant}.
-%\end{itemize}
-
-%Remember, you will be marked by your supervisor and one or more members
-%of staff. You might also have your project read by a prize-awarding
-%committee or possibly a future employer. Bear that in mind.
-
-%There are many style guides on good English writing. You don't need to
-%read these, but they will improve how you write.
-
-%\begin{itemize}
-    %\item
-    %\emph{How to write a great research paper} \cite{Pey17} %(\textbf{recommended}, even though you aren't writing a research paper)
-    %\item
-    %\emph{How to Write with Style} \cite{Von80}. Short and easy %to read. Available online.
-    %\item
-    %\emph{Style: The Basics of Clarity and Grace} \cite{Wil09} A very popular modern English style guide.
-    %\item
-    %\emph{Politics and the English Language} \cite{Orw68}  A %famous essay on effective, clear writing in English.
-    %\item
-    %\emph{The Elements of Style} \cite{StrWhi07} Outdated, and %American, but a classic.
-    %\item
-    %\emph{The Sense of Style} \cite{Pin15} Excellent, though %quite in-depth.
-%\end{itemize}
-
-
-%\begin{itemize}
-%\item If you are referring to a reference as a noun, then cite it %as: ``\citet{Orw68} discusses the role of language in political %thought.''
-%\item If you are referring implicitly to references, use: ``There %are many good books on writing \citep{Orw68, Wil09, Pin15}.''
-%\end{itemize}
-
-%There is a complete guide on good citation practice by Peter %Coxhead available here: %\url{http://www.cs.bham.ac.uk/~pxc/refs/index.html}. 
-%If you are unsure about how to cite online sources, please see \%citet{UNSWWebsite}. 
-%\footnote{Specifying an online resource like \url{https://developer.android.com/studio}
-%in a footnote sometimes makes more sense than including it as a %formal reference.}
-
-
-%\begin{highlight_title}{WARNING}
-    
-    %If you include material from other sources without full and correct attribution, you are commiting plagiarism. The penalties for plagiarism are severe.
-    %Quote any included text and cite it correctly. Cite all images, figures, etc. clearly in the caption of the figure.
-%\end{highlight_title}
-
-%If you are quoting a long passage, use a \texttt{quote} %environment:
-
-%\begin{quote}
-     %If you scribble your thoughts any which way, your readers will surely feel that you care nothing about them. They will mark you down as an egomaniac or a chowderhead -or, worse, they will stop reading you. The most damning revelation you can make about yourself is that you do not know what is interesting and what is not.
-%\end{quote} \citep{Von80}
-
-%If you are quoting inline, like Simon Peyton-Jones' following remark, use quotation marks ``Conveying the intuition is primary, not
-%secondary'' \citep{Pey17}.
-
-
 %==================================================================================================================================
 \chapter{Background}
 \label{chap:background}
 
-%What did other people do, and how is it relevant to what you want %to do?
-\section{Autoencoders}
-An autoencoder is a neural network that attempts to copy its input to its output. It consists of two parts - encoder and decoder. In addition to input and output layers, it has a hidden layer (known as latent space or code) which represents the input. The encoder maps the input to the latent space whereas the decoder maps the latent space to a reconstruction of the input. The hidden layer contains a smaller number of neurons than the input layer. Because of this, the network reconstructs its input from a smaller feature space and therefore it learns a more compact representation of the original data.(\cite{deeplearning}) In computer vision they can be used for tasks such as denoising images.(\cite{denoising})
+The following chapter describes concepts which are relevant to our implementation of feedback in convolutional neural networks. Furthermore, it reviews work previously done in this field. Finally, it provides a critical analysis on the relevance of this work to the techniques we will implement.
 
+\section{Autoencoders}
+An autoencoder is a neural network that attempts to copy its input to its output. It consists of two parts - encoder and decoder. In addition to input and output layers, it has a hidden layer (known as latent space or code) which represents the input. The encoder maps the network's input to the latent space whereas the decoder maps the latent space to a reconstruction of the input. The hidden layer contains a smaller number of neurons than the input layer. Because of this, the network reconstructs its input from a smaller feature space and therefore it learns a more compact representation of the original data. (\cite{deeplearning}). In computer vision they can be used for tasks such as denoising images. (\cite{denoising}).
+We will use the autoencoder to form a combined network which will have the ability to do image classification and image reconstruction.
 
 \section{Transfer learning}
 Transfer learning (\cite{transfer}) is the concept of using a pretrained neural network for a new related task. There are two main types of transfer learning.
@@ -218,98 +159,78 @@ Transfer learning (\cite{transfer}) is the concept of using a pretrained neural 
     \item Finetune a network - instead of randomly initialising the weights of our network, we set the weights to be equal to the weights of a pretrained network. 
     \item Use part of the network as a feature extractor and then train newly added layers - we can take a neural network and freeze the weights for all layers except the last one which will be adapted to our task. In this way, only the last layer would be initialised with random weights and fully trained.
 \end{itemize}
-    
-Transfer learning is suitable for introducing feedback - we will set the weights of the convolutional layers of our feedback networks to the weights of the convolutional layers of our baseline classifier and let the network apply feedback.
-
-\section{Activation functions}
-The activation function decides whether a neuron should be activated or not. The purpose of using it is to introduce non-linearity into the output of a neuron. This section describes activation functions that we deemed useful for the implementation of this project.
-
-\subsection{Rectified linear unit}
-The rectified linear unit function (ReLU) was introduced by \cite{relu} and is defined as
-\begin{equation}
-    f(x)=x^{+}=\max(0,x)
-\end{equation}
-\cite{dyingrelu} demonstrated that sometimes the ReLU neurons may become inactive and in this way only zeroes would be output for any input. This means that no gradients flow backward through the neuron. Consequently, this could have a negative effect on the performance of the network. A possible mitigation is to use the Leaky ReLU function instead.
-
-\cite{leakyrelu} defined the Leaky ReLU function as
-\begin{equation}
-    f(x)={\begin{cases}x&{\text{if }}x>0,\\0.01x&{\text{otherwise}}.\end{cases}}
-\end{equation}
-This function introduces a small non-zero gradient when a neuron is not active.
-
-\subsection{Hyperbolic tangent}
-A hyperbolic function is a trigonometric function which is defined for a hyperbola instead of a circle. 
-
-An example of a suitable activation non-linear function is the hyperbolic tangent. It is defined as
-\begin{equation}
-    f(x)=\tanh(x)={\frac {(e^{x}-e^{-x})}{(e^{x}+e^{-x})}}
-\end{equation}
-
-\subsection{Softmax}
-The Softmax function is an activation function used for mapping the output of a network to a probability distribution over the predicted output classes. For i = 1,...,j it is defined as
-
-\begin{equation}
-    f_{i}({\vec {x}})={\frac {e^{x_{i}}}{\sum _{j=1}^{J}e^{x_{j}}}} 
-\end{equation}.
-
-We will be applying the LogSoftmax function on the output layer which is just the function described above, followed by a logarithm. This will provide us with a vector which contains the probabilities of an image belonging to each possible class.
+An example of incorporating this concept into the implementation of our project is that we will use a pretrained classifier when training our network with feedback.
 
 \section{Class Activation Mappings}
-Class Activation Mapping (CAM) is a visualisation technique proposed by (\cite{cam}). It allows convolutional neural networks used for classification to perform object localization without the need for bounding box annotations. This technique generates a heatmap which is used to highlight the regions of the image the convolutional network used for classification. Furthermore, it can be used on other vision tasks such as image captioning or visual question answering.(\cite{VQA}). A restriction of this approach is that the networks have to be fully convolutional, i.e. they have to contain convolutional layers only. Such networks may perform worse on some task compared with traditionally used networks, or may not be applicable to other tasks at all.
+\label{lab:gradcam}
+Class Activation Mapping (CAM) is a visualisation technique proposed by \cite{cam}. It allows convolutional neural networks used for classification to do object localization without the need for bounding box annotations. This technique generates a heatmap which is used to highlight the regions of the image the convolutional network used for classification. Furthermore, it can be used on other vision tasks such as image captioning or visual question answering. (\cite{VQA}). 
+
+A restriction of this approach is that the networks have to be fully convolutional, i.e. they have to contain only convolutional layers. Such networks may perform worse on some task compared with traditionally used networks, or may not be applicable to other tasks at all.
 
 A generalisation of this approach was designed by \cite{gradcam} called Gradient-weighted class activation mapping (Grad-CAM). This method is applicable to any convolutional neural network without requiring changes to be made to its architecture. In contrast with CAM which generates the maps by performing global average pooling (\cite{gap}) before prediction, the Grad-CAM approach uses the gradients of a target label flowing into the final convolution layer to produce the heatmap.
 
+\section{Feedback mechanisms and attention models}
+\subsection{Attention-guided image-to-image translation}
+\label{lab:attention}
+\cite{imagetransl} proposed an image translation technique which incorporated attention. Their motivation was that prior existing approaches such as CycleGAN  (\cite{cyclegan}) were not able to focus solely on the foreground of an image and were translating parts of the backgrounds as well. Their suggested solution to this was to incorporate an attention network to the CycleGAN. In this way, the discriminator produces an attention map of regions which are the most important when translating an image. An advantage of this approach is that producing the attention maps does not require additional supervision.
 
-\section{Recurrent Neural Networks}
-Recurrent neural networks are networks which have internal memory based on the input data. The consequence of adding memory to neural networks is that in this way recurrent neural networks are able to perform tasks that feedforward networks would not be able to, for example predicting or learning items in a sequence.(\cite{recurrent}) Their output is a combination of the input and the internal state.
-\textbf{Figure \ref{fig:rnn}} illustrates the structure of recurrent neural network.
+\subsection{Recurrent Neural Networks using Feedback}
+\label{recfeedback}
+Recurrent neural networks (\cite{rnn}) are networks which have internal memory based on the input data. The consequence of adding memory to neural networks is that in this way recurrent neural networks are able to perform tasks that feedforward networks would not be able to, for example predicting or learning items in a sequence (\cite{recurrent}). Their output is a combination of the input and the internal state.
+\textbf{Figure \ref{fig:rnn}} illustrates the structure of a recurrent neural network.
 
-\begin{figure}[htb]
+\cite{feedbackrnn} built a recurrent neural network which used feedforward, feedback and lateral connections. They trained and tested their network on a synthesised dataset of images of digits - occluding digits with each other, and occluding digits with fragments. They used different combinations of networks, in this way forming four unique architectures. This method outperformed feedforward networks both on tasks with occlusion and without occlusion.
+
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.5\linewidth]{images/rnn.jpg}    
-
-    z\caption{Visual illustration of a recurrent neural network (\cite{rnngraph})} %looking at: ``A schematic of the rectifying linear unit, %where $a$ is the output amplitude,
-    %$d$ is a configurable dead-zone, and $Z_j$ is the input %signal'', as well as why the reader is looking at this: 
-    %``It is notable that there is no activation \emph{at all} %below 0, which explains our initial results.'' 
-    %}
-
-    % use the notation fig:name to cross reference a figure
+    \includegraphics[width=0.8\linewidth]{images/rnn.jpg}
+    z\caption{Visual illustration of a recurrent neural network (\cite{rnngraph})}
     \label{fig:rnn} 
 \end{figure}
 
-
-\section{Feedback architectures}
-\subsection{Recurrent Neural Networks using Feedback}
-\label{recfeedback}
-\cite{feedbackrnn} built a recurrent neural network which used feedforward, feedback and lateral connections. They trained and tested their network on a synthesised dataset of images of digits - occluding digits with each other, and occluding digits with fragments. They used different combinations of networks, in this way forming four unique architectures.Their network outperformed feedforward networks both on tasks with occlusion and without occlusion.
-
 \subsection{Deep Predictive Coding}
-Inspired by the approach described in section \textbf{\ref{recfeedback}} is the Deep Predictive Coding Network (\cite{deeppcn}). The design of this network was motivated by the predictive coding theory, researched by \cite{predcod}. They defined it as the process of constantly learning and generating a new model of the environment. Their findings showed that the feedback connections from a higher layer carry the prediction of its lower-layer representation whereas feedforward connections carry the prediction error to its higher layer. The network aims to reduce the difference between bottom-up input and top-down prediction at every layer. In this way, the brain updates its representations to progressively refine its decisions, for example - the classification or segmentation of an object. This network was shown to always outperform feedforward network.
+Inspired by the approach described in  \textbf{Section \ref{recfeedback}} is the Deep Predictive Coding Network (\cite{deeppcn}). The design of this network was motivated by the predictive coding theory, researched by \cite{predcod}. They defined it as the process of constantly learning and generating a new model of the environment. Their findings showed that the feedback connections from a higher layer carry the prediction of its lower-layer representation whereas feedforward connections carry the prediction error to its higher layer. The network aims to reduce the difference between bottom-up input and top-down prediction at every layer. In this way, the brain updates its representations to progressively refine its decisions, for example - the classification or segmentation of an object. This network was shown to always outperform feedforward network. \textbf{Figure \ref{fig:pcn}} illustrates the architecture of a Predictive Coding Network.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\linewidth]{images/pcn.png}
+    \caption{A comparison between a convolutional network and a Predictive coding network, adapted from \cite{deeppcn}. Feedback connections (blue), feedforward connections (green) and recurrent connections (black) convey the top-down prediction, the bottom-up prediction error and the previous input, respectively.}
+    \label{fig:pcn} 
+\end{figure}
+
+\subsection{DasNet}
+\label{dasnet}
+\cite{dasnet} proposed DasNet - a selective attention network which allows each layer to influence other layers through spatial connections.
+The network is first trained in a supervised way, then a policy is implemented using reinforcement learning. This policy can enhance or suppress features to improve classification of images which have been wrongly classified during supervised learning. This is done by allowing the network to iteratively focus on its filters. This approach implemented feedback using scalable natural evaluation strategies (\cite{SNES}) and direct policy search.
+
+\subsection{"Look and think twice"}
+\label{twice}
+Inspired by the approach described in \textbf{Section \ref{dasnet}}, \cite{thinktwice} suggested modifying the weights of the hidden layer according to a goal. They called this method "Look and think twice". Feedback results in selectivity in activations - in this way visual attention is improved. Feedback takes into account both the predictions of the network as well as the activations of the hidden layer neurons.
+Furthermore, it suppresses irrelevant information during top-down inference. This approach approximates human vision by using weakly supervised object localization and then focusing the network on the regions of interest to improve classification rate.
+
+\subsection{"Learning with rethinking"}
+In a similar approach to \textbf{Section \ref{twice}}, \cite{rethinking} describe a method which adds feedback to a feedforward network - they call this approach "Learning with rethinking". Their motivation for this was the fact that object recognition outputs several prediction labels but is unsure how to determine the correct one.
+The network includes two additional layers - a feedback layer and an emphasis layer. The top layer is connected to a bottom layer through the feedback layer and weights are provided for the feature maps in the bottom layer through the emphasis layer. The feature maps in the hidden layer are readjusted - in this way the network reconsiders its decision.
+
+\subsection{Feedback using curriculum learning}
+\cite{feedbackcurriculum} suggested an approach which makes use of a concept called curriculum learning (\cite{curriculum}). Curriculum learning refers to the concept of providing examples in a order. In the context of deep learning this means providing a smaller number of easy examples early during training and gradually increasing the number of examples and their difficulty later on. \cite{feedbackcurriculum} utilise this by providing a prediction after the first iteration of training - on later iterations this is refined to a more concrete example, thus adopting a coarse-to-fine prediction approach. At each iteration an output is recursively estimated using the output from the previous iteration. This technique showed that the features learned from using feedback are significantly different than the features learned from feedforward training. Furthermore, it showed that feedback networks discriminate between classes in early layers as opposed to feedforward layers which make predictions in last layers.
+
+\section{Discussion}
+While we have a common aim with the approaches described above - namely to improve classification accuracy using feedback, we are also interested in generating a segmentation mask with which classification could be improved. A key difference between our approach and the techniques described is that feedback is implemented between layers - in our case we require feedback to be transmitted across the outputs of the network, in particular we make comparison between input and output. Even though these approaches have achieved state-of-the-art results, in particular - they have shown an improvement of classification accuracy over feedforward neural networks, they are too complex and expensive for the time and memory requirements of this project. Therefore, the works of the utmost importance for our analysis and implementation are the Grad-CAM  (\cite{gradcam}) and  attention-guided image-to-image translation (\cite{imagetransl}), described in \textbf{Sections \ref{lab:gradcam} and \ref{lab:attention}}, respectively.
 
 \section{Summary}
-This chapter provided an explanation of concepts which are relevant for the implementation of this project. Firstly, it briefly described how autoencoders work. Subsequently, it illustrated the ideas behind transfer learning and introduced a visualisation technique called Class Activation Mapping. 
-Finally, it reviewed and compared previous approaches of using feedback in convolutional neural networks for vision.
-
-%==================================================================================================================================
-%\chapter{Analysis}
-%What is the problem that you want to solve, and how did you arrive at %it?
-%\section{Guidance}
-%Make it clear how you derived the constrained form of your problem via %a clear and logical process. 
-
-%The analysis chapter explains the process by which you arrive at a %concrete design. In software 
-%engineering projects, this will include a statement of the requirement %capture process and the
-%derived requirements.
-
-%In research projects, it will involve developing a design drawing on
-%the work established in the background, and stating how the space of %possible projects was
-%sensibly narrowed down to what you have done.
+This chapter provided an explanation of concepts which are relevant for the implementation of this project. Firstly, it briefly described how autoencoders work. Subsequently, it illustrated the ideas behind transfer learning and described activation functions which are going to be used in implementing our models. It then went on to describe a visualisation technique called Class Activation Mapping. Finally, it reviewed and compared previous approaches of using feedback in convolutional neural networks for vision.
 
 %==================================================================================================================================
 \chapter{Approach}
-\todo{Explain Max pooling}
-
 \label{chap:approach}
-%How is this problem to be approached, without reference to %specific implementation details? 
+The approach we took in introducing feedback is to extend a convolutional neural network to have the ability to reconstruct images as well. In this way, we can recursively modify the inputs to the network using the generated output from a previous iteration. In this way, we are forcing the network to increase its attention on the object that it should classify. Furthermore, feedback allows the classification be directly influenced by the generated output.
+Consequently, we are aiming to remove as much of the background as possible and generate a mask of the object for classification.
+
+We first do a forward pass of the network, in which just the original image is used as input. Next, for each subsequent pass we feed back the output from the previous iteration as input.
+
+This chapter describes the individual components of our our network (classifier and autoencoder). We then illustrate how these are combined to form a network which has the ability to simultaneously classify and reconstruct images. Finally, we illustrate how feedback is incorporated in four different cases - using subtraction, multiplication, a second input channel and class activation mappings.
+
 \section{Classifier}
 \label{app:classifier}
 We implemented a convolutional feedforward classifier as a starting point. In this way, we would have a baseline against which we could compare our feedback approaches. We will refer to this feedforward network as a simple classifier.
@@ -317,12 +238,18 @@ We implemented a convolutional feedforward classifier as a starting point. In th
 We start with four convolutional layers, each followed by a MaxPool layer (\cite{maxpool}). 
 We also apply Batch Normalisation to the first two convolutional layers. Batch normalisation was developed by \cite{batchnorm} and improves training by normalizing the input layer through adjust and scaling the activations.
 
-We then use three fully connected layers, with dropout applied to the first two. We followed \cite{dropout}'s proposition to place it on the fully connected layers before the last one. By randomly ignoring some of the units and their connections with probability p, the network is prevented from overfitting and its generalization error is reduced. Consequently, it can be applied on all layers apart from the last one. In this way, the network is more robust and the generalization error is reduced.
+We then convert the result of the last convolutional layer to a 1D tensor - this operation is known as flattening. We do this so that we can use it as an input to the fully connected (dense) layers.
 
-We apply the Leaky rectified linear unit (Leaky ReLU) activation function (\cite{activations}) to all layers with the exception of the last fully connected layer.
-Finally, we apply the LogSoftmax function to the last fully connected layer.
+We then use three fully connected layers, with dropout applied to the first two during training. We followed \cite{dropout}'s proposition to place it on the fully connected layers before the last one. By randomly ignoring some of the units and their connections, the network is prevented from overfitting and its generalization error is reduced. Dropout forces each neuron to learn features on its own independently of the other neurons.
+Therefore, the network is more robust and the generalization error is reduced. 
 
-Table \textbf{\ref{tab:classifier}} presents the full architecture of our baseline classifier.
+Dropout takes a parameter which is the probability p of the neurons being switched off. We chose p = 0.5 for the first fully connected layer and p = 0.4 for the second layer, respectively. We chose these values since we expect that the second layer will have more meaningful features extracted than the first.
+
+We apply the Leaky rectified linear unit (Leaky ReLU) activation function to all layers with the exception of the last fully connected layer.
+Finally, we apply the LogSoftmax function to the last fully connected layer. These activation functions are explained in more detail in the \textbf{Section \ref{activation}} in the appendix.
+
+\textbf{Table {\ref{tab:classifier}}} presents the full architecture of our baseline classifier.
+We designed the network in compliance with the time available for the implementation of the project and the memory requirements of Google Colab.
 
 \begin{table}[ht!]
 \centering
@@ -352,16 +279,17 @@ Log\_Softmax    &                       &                        &              
 \end{table}
 
 We decided to train the classifier using the Cross-Entropy loss function, which combines LogSoftMax and Negative Likelihood Loss in a single class. We chose this function because it measures the performance of a model which outputs a probability value, in our case - the probability of an image belonging to a particular class.
-We trained the classifier using the Adam optimizer.We chose Adam because it works well in practice and provides the best results compared with other optimization algorithms.(\cite{optimoverview})
+
+We trained the classifier using the Adam optimizer.We chose Adam because it works well in practice and provides the best results compared with other optimization algorithms (\cite{optimoverview}). This combination of a loss function and an optimizer will be used for training all of our models so that we can compare the performance of our networks trained under the same conditions.
 
 
 \section{Autoencoder}
 We then implemented an autoencoder which will generate new images from our input data. We use transposed convolutional layers so that our generated images can have the same dimensions as the original images.
 Finally, we apply the tanh activation function to the last transposed convolutional layer.
 
-We decided to train the autoencoder using the Mean Squared error loss function and the Adam optimizer. In comparison with Section \ref{app:classifier}, our outputs are now images (tensors in which each entry corresponds to the value a pixel) rather than vectors of probabilities. We chose this loss function because we are interested in measuring the difference between the input tensors and the generated tensors.
+We decided to train the autoencoder using the Mean Squared error loss function and the Adam optimizer. In comparison with \textbf{Section \ref{app:classifier}}, our outputs are now images (tensors in which each entry corresponds to the value of a pixel) rather than vectors of probabilities. We chose this loss function because we are interested in measuring the difference between the input tensors and the generated tensors.
 
-Table \textbf{\ref{tab:autoencoder}} illustrates the full architecture of our autoencoder.
+\textbf{Table \ref{tab:autoencoder}} illustrates the full architecture of our autoencoder.
 
 \begin{table}[ht!]
 \centering
@@ -391,17 +319,17 @@ Tanh            &                       &                        &              
 
 
 \section{Combined network}
-We then formed a combined network which acts simultaneously as a classifier and an autoencoder. We did this by adding the deconvolutional layers to the simple classifier. We then used the latent space as input to both the fully connected layers of the classifier as well as to the deconvolutional layers. In this way, classification and image generation were combined into a single network.Our hypothesis is that by training a network to do two tasks, it will form a more robust latent space and therefore performance will be improved for both networks.
+\label{app:combined}
+We then formed a combined network which acts simultaneously as a classifier and an autoencoder. We did this by adding the deconvolutional layers to the simple classifier we have already implemented. We then used the latent space as input to both the fully connected layers of the classifier as well as to the deconvolutional layers. In this way, classification and image generation were combined into a single network. Our hypothesis is that by training a network to do two tasks, it will form a more robust latent space and therefore performance will be improved for both networks.
 
-We trained this model by using a joint loss function which is formed by the sum of the classifier and autoencoder's individual losses. A potential problem with this approach is that these two losses may be in very different ranges. A solution to this problem is to take the loss values from all epochs when the classifier or autoencoder is trained on its own, and prior to summing them, subtract the mean and divide by the standard deviation. Therefore, losses will now be compatible and in the same range and we will be able to evaluate the performance of the combined.
+We trained this model by using a joint loss function which is formed by the sum of the classifier and autoencoder's individual losses. This newly-formed loss function will give the network the ability to classify and reconstruct images.
 
-Table \textbf{\ref{tab:combined}} depicts our combined network architecture.
+A potential problem with this approach is that these two losses may be in very different ranges. A solution to this problem is to take the loss values from all epochs when the classifier or autoencoder is trained on its own, and prior to summing them, subtract the mean and divide by the standard deviation. Therefore, losses will now be compatible and in the same range and we will be able to evaluate the performance of the combined.
 
+\textbf{Table \ref{tab:combined}} depicts our combined network architecture.
 
-
-\begin{table}[ht!]
+\begin{table}[H]
 \centering
-\caption{Architecture of combined network}
 \begin{tabular}{|l|l|l|l|l|l|}
 \hline
 \textbf{Layer}  & \textbf{in\_channels} & \textbf{out\_channels} & \textbf{kernel\_size} & \textbf{stride} & \textbf{padding} \\ \hline
@@ -428,41 +356,64 @@ Dropout(p=0.4)  &                       &                        &              
 Linear          & 256                   & no. of classes         &                       &                 &                  \\ \hline
 Log\_Softmax    &                       &                        &                       &                 &                  \\ \hline
 \end{tabular}
+\caption{Architecture of combined network}
 \label{tab:combined}
 \end{table}
 
 \section{Feedback architectures}
-The approach we took to introduce feedback in the feedforward convolutional neural network was to recursively modify the inputs of the network using the output of the previous iteration. In this way, we are forcing the network to increase its attention on the object that it should classify. Consequently, we are aiming to remove as much of the background as possible and use a mask of the object for classification.
-
-We first do a forward pass of the network, in which just the original image is used as input. Next, for each subsequent pass we feed back the output from the previous iteration as input.
 
 \subsection{Subtractive feedback}
-\subsection{Multiplicative feedback}
-\subsection{Using generator output as a second input channel}
-\subsection{Using class activation mappings}
-\section{Summary}
-This chapter provided an in-depth look at the architecture of the networks we implemented. We first explained how our plain classifier and autoencoder are structured, then went on to describe the combined network used for reconstructing an image and classifying it. Finally, we describe how we will implement different cases of feedback.
-%Design should cover the abstract design in such a way that someone else might be able to do what you did, 
-%but with a different language or library or tool. This might include overall system architecture diagrams,
-%user interface designs (wireframes/personas/etc.), protocol specifications, algorithms, data set design choices,
-%among others. Specific languages, technical choices, libraries and such like should not usually appear in the design. These are implementation details.
+\label{app:subtractive}
+The first approach we took to applying feedback is to take the difference between the original image and the generated image. On each iteration the generated image is multiplied by a coefficient, which at the first iteration is set to 0.1. This coefficient increases with a factor of 0.1 on each iteration, thus reaching 1.0 at the final pass. Our motivation for this is that each iteration will further highlight relevant information (e.g. the object itself) and suppress irrelevant information (e.g. the background). In this way, the resulting image on the final iteration will consist of just the object with the background eliminated. Consequently, this should improve classification rate.
+We describe the algorithm in pseudocode in \textbf{Section \ref{implsubtr}}.
 
+\subsection{Multiplicative feedback}
+\label{app:multiplicative}
+We next examined multiplicative feedback - instead of subtracting the generated image from the original image, we multiply them together with a coefficient which increases on each iteration.
+The motivation for taking this approach is that each iteration will increasingly highlight the object and remove the background. This strategy was inspired by the image translation technique described in \textbf{Section \ref{lab:attention}} where a mask is multiplied by the image in order to translate the relevant pixels.
+Therefore, we expect that by using an image of the object the network will improve its classification rate.
+
+We describe the algorithm in pseudocode in \textbf{Section \ref{implmult}}.
+
+\subsection{Using generator output as a second input channel}
+\label{app:genout}
+The next form of feedback we looked at is to form a new image from the original image and the generated image from the combined network, thus forming a new 6-channel image on each iteration which is then used as input to the network. Our motivation is that in this way the network will learn to use the generated output in order to enhance the foreground and suppress the background.
+This approach requires a small modification to our network - our first convolutional layer will now take 6 channels instead of 3. 
+
+The technical details of this approach are described in pseudocode in \textbf{Section \ref{impl:genoutput}}.
+
+\subsection{Using class activation mappings}
+The last approach that we examined is to use to combine the heatmaps and the original images by multiplying them. In this way, the result of the multiplication would be an image which has the most discriminative regions (ideally the object itself) highlighted. Consequently, when this new image is used as input to the network, we expect that the network will adjust its weights and therefore focus on these important regions and produce a more accurate heatmap and improve classification rate.
+
+The technical details of this approach are described in pseudocode in \textbf{Section \ref{implgradcam}}.
+
+\section{Summary}
+This chapter provided an in-depth look at the architecture of the networks we implemented. We first explained how our plain classifier and autoencoder are structured, then went on to describe the combined network used for reconstructing an image and classifying it. Finally, we described the types of feedback networks that we will implement - subtractive feedback, multiplicative feedback, a model which takes a 6-channel image composed of the original image and a reconstructed image, and finally - a model which uses the class activation mappings of a network.
 
 %==================================================================================================================================
 \chapter{Implementation}
 \label{chap:implementation}
+This chapter presents the implementation of feedback networks in technical terms. Firstly, it provides an overview of the chosen framework and the rationale for that choice. It then describes how data is loaded and preprocessed.  Subsequently, a description of the overall training, validation and testing strategy is provided. Finally, it provides an algorithm of how each feedback technique is implemented in pseudocode.
+
 \section{Overview}
-The project was developed using PyTorch which is a library developed by \cite{pytorch}. We chose this framework because it has built-in support for Google Colab and the broad number of resources available for it. PyTorch provides a package called \textit{nn} which provides us with the \textit{Module} class - our neural networks inherit from this class. It also gives us access to loss functions. Another package called \textit{optim} implements optimization algorithms such as Stochastic Gradient Descent, developed by \cite{SGD}, and Adaptive Moment Estimation, also known as Adam.(\cite{adam})
+The development of this project requires a suitable framework which supports GPU acceleration so that the implemented convolutional neural networks using feedback mechanisms can be efficiently trained. Furthermore, we require easy plotting of graphs so that we examine the network's performance. Therefore, our choice of network as PyTorch - a Python library developed by \cite{pytorch}. 
+
+We used Google Colab for the implementation of this project. The use of Jupyter notebooks makes this a suitable choice so that we can combine code with graphs and text explanations. 
+
+
+PyTorch provides a package called \textit{nn} which provides us with the \textit{Module} class - our neural networks inherit from this class. This class provide us the flexibility to make changes in our architectures easily. It also gives us access to loss functions. Another package called \textit{optim} implements optimization algorithms such as Stochastic Gradient Descent, developed by \cite{SGD}, and Adaptive Moment Estimation, also known as Adam. (\cite{adam})
 
 PyTorch also provides us with a \textit{DataLoader} class - object of this class will contain our data which we will feed into our network after preprocessing. The DataLoader takes as parameters
 \begin{itemize}
     \item a \textit{Dataset} - this can be one of the readily available datasets in PyTorch or a custom dataset of our own
     \item batch size - the number of samples our network goes through before updating its weights
+    \item Shuffle - a Boolean variable which indicates whether to shuffle the examples in the dataset. We set this to True so that the model is presented with the images in a random order. This is beneficial because it prevents the network from learning patterns or seeing a fixed order of examples.
     \item a \textit{Sampler} - an optional parameter which specifies which indices of the Dataset will be loaded - we use this to make sure that each class has the same number of examples to avoid class imbalance (\cite{classimb})
+    
 \end{itemize}
 
-
-Firstly, we set aside a fraction of the training set which will be used for validation. We used a random seed to ensure reproducibility of the results, in particular to ensure that we take the same fraction for validation on each run. We then resized the images and convert them to tensors so that they can be fed into the network.
+Firstly, we set aside a fraction of the training set which will be used for validation. We use a 80-20\% split since this is a common way of splitting the data into training and validation sets. We used a random seed to ensure reproducibility of the results, in particular to ensure that we take the same fraction for validation on each run. We then resized the images, randomly flipped them horizontally and finally converted them to tensors so that they can be fed into the network.
+Randomly flipping the images is a form of data augmentation - this prevents the network from overfitting and helps it generalise better.
 
 Subsequently, we developed a training and validation script which takes the following parameters
 \begin{itemize}
@@ -471,9 +422,10 @@ Subsequently, we developed a training and validation script which takes the foll
     \item A loss function
     \item A mode - this is a text description of the type of network that we are using, e.g. plain classifier or subtractive feedback
 \end{itemize}
-The function returns the same model with the updated weights as well as a list of lists of training/validation losses and accuracies.
+The function returns the same model with the updated weights as well as a list of lists of training/validation losses and accuracies which will be used for plotting. The setup of this function is beneficial because if our model has not converged we can easily continue training by calling this method again - the function will take the newly updated model as a parameter. To ensure that our model has the best weights when evaluated on the test set (rather than the set of weights calculated on the last epoch) on each epoch we compare the current accuracy with the highest previous accuracy - if this is the case we store the best model to use it in testing later.
 
-We iterate over the training and validation data for 50 epochs. We chose this number as we explored that it is enough number of epochs so that our models can converge.
+We iterate over the training and validation data for 50 epochs. We chose this number as we explored that it is enough number of epochs so that our models can converge. We used a batch size of 64.
+
 The following steps are common for training all of our models
 \begin{itemize}
     \item We first clear out any accumulated gradients using the \textit{zero\_grad} method of the optimizer - used only when training
@@ -484,14 +436,13 @@ The following steps are common for training all of our models
     \item Finally, we calculate the loss and accuracy over all batches for one epoch
 \end{itemize}
 
-The test script follows a similar pattern. In addition to these calculations, we also calculate a confusion matrix for the test set which gives us the number of correctly classified objects as well as common misclassifications. In the case of using feedback, we also calculate accuracy-per-feedback iteration so that we can see the effect of increasing the number of iterations.
+The test script follows a similar pattern. In addition to these calculations, we also calculate a confusion matrix for the test set which gives us the number of correctly classified objects as well as common misclassifications. The implementation of the confusion matrix includes scripts for generating graphics which are adapted from Sklearn - a machine learning library in Python developed by \cite{scikit-learn}.
+In the case of using feedback, we also calculate accuracy-per-feedback iteration so that we can see the effect of increasing the number of iterations.
 
-We repeated each training run 3 times so that we can be sure that we are getting consistent results. We trained all of our networks using identical conditions - we trained them for 50 epochs, used the Adam optimizer with a learning rate of 0.001. We explored using learning rates of 0.01 and 0.0001, however 0.001 provided the best results. Furthermore, this learning rate is recommended by the documentation of PyTorch.
-
-%What did you do to implement this idea, and what technical achievements %did you make?
 
 \section{Simple classifier}
-\textbf{Algorithm \ref{alg:plain}} describes the algorithm for training a plain convolutional network.
+We first train the simple classifier as described in \textbf{Section \ref{app:classifier}}. \textbf{Algorithm \ref{alg:plain}} describes in pseudocode the algorithm for training this network.
+
 \begin{algorithm}
     \DontPrintSemicolon
     \KwData{$trainloader$, a collection of all batches of input images\newline$network$, our neural network}
@@ -504,21 +455,12 @@ We repeated each training run 3 times so that we can be sure that we are getting
         \For{images, labels in trainloader}
         {
             $optimizer.zero\_grad()$ \tcp{clear gradients}\; 
-            $generated,predicted \longleftarrow network.forward(images)$\;
+            $predicted \longleftarrow network.forward(images)$\;
             $\alpha \longleftarrow 0.1$\;
             $lossclass \longleftarrow loss(predicted,labels)$\;
-            $(lossgen+lossclass).backward()$\;
+            $lossclass.backward()$\;
             $optimizer.step()$
             \tcp{update parameters}
-            %$a \longleftarrow \frac{p^\prime}{p}$\;
-            %$r \longleftarrow U(0,1)$\;
-            %\If{$r<a$}
-            %{
-                %$x \longleftarrow x^\prime$\;
-                %$p \longleftarrow f_X(x)$\;
-                %$i \longleftarrow i+1$\;
-                %append $x$ to $s$\;
-            %}
         }
     }
     
@@ -527,7 +469,7 @@ We repeated each training run 3 times so that we can be sure that we are getting
 
 
 \section{Combined model}
-\textbf{Algorithm \ref{alg:combined}} describes the algorithm for training a combined convolutional neural network to reconstruct and classify images.
+We then train a combined network to reconstruct and classify images as described in \textbf{Section \ref{tab:combined}}. \textbf{Algorithm \ref{alg:combined}} describes the algorithm in pseudocode for training this network.
 
 \begin{algorithm}
     \DontPrintSemicolon
@@ -549,19 +491,11 @@ We repeated each training run 3 times so that we can be sure that we are getting
             $(lossgen+lossclass).backward()$\;
             $optimizer.step()$
             \tcp{update parameters}
-            %$a \longleftarrow \frac{p^\prime}{p}$\;
-            %$r \longleftarrow U(0,1)$\;
-            %\If{$r<a$}
-            %{
-                %$x \longleftarrow x^\prime$\;
-                %$p \longleftarrow f_X(x)$\;
-                %$i \longleftarrow i+1$\;
-                %append $x$ to $s$\;
-            %}
+
         }
     }
     
-\caption{The algorithm for training a combined convolutional neural to reconstruct and classify images. }\label{alg:combined}
+\caption{The algorithm for training a combined convolutional neural network to reconstruct and classify images. }\label{alg:combined}
 \end{algorithm}
 
 
@@ -570,9 +504,12 @@ We repeated each training run 3 times so that we can be sure that we are getting
 
 
 \section{Feedback architectures}
-\subsection{Subtractive feedback}
+When training the network to use feedback, we decided to use a pretrained classifier so that the generator will be able to produce better segmentation masks. This boils down to setting the weights of the convolutional layers and the fully connected layers apart from the last one equal of a new instance to the respective weights of a classifier which has already been trained. We then froze these layers (set the requires\_grad parameter of these layers to False so that the gradients will not be optimised).
 
-\textbf{Algorithm \ref{alg:subtractive}} describes the algorithm for training a convolutional neural network using subtractive feedback in pseudocode.
+\subsection{Subtractive feedback}
+\label{implsubtr}
+We then apply subtractive feedback to our network as described in \textbf{Section {\ref{app:subtractive}}}.
+\textbf{Algorithm \ref{alg:subtractive}} describes the algorithm for training in pseudocode.
 
 \begin{algorithm}
     \DontPrintSemicolon
@@ -581,9 +518,7 @@ We repeated each training run 3 times so that we can be sure that we are getting
     $labels$ - the predicted labels for these images.}
     \CommentSty{\color{black}}
     \Begin{
-        %$s \longleftarrow []$\;
-        %$p \longleftarrow f_X(x)$\;
-        %$i \longleftarrow 0$\;
+
         \For{images, labels in trainloader}
         {
             $optimizer.zero\_grad()$ \tcp{clear gradients}\; 
@@ -600,15 +535,7 @@ We repeated each training run 3 times so that we can be sure that we are getting
             $(lossgen+lossclass).backward()$\;
             $optimizer.step()$
             \tcp{update parameters}
-            %$a \longleftarrow \frac{p^\prime}{p}$\;
-            %$r \longleftarrow U(0,1)$\;
-            %\If{$r<a$}
-            %{
-                %$x \longleftarrow x^\prime$\;
-                %$p \longleftarrow f_X(x)$\;
-                %$i \longleftarrow i+1$\;
-                %append $x$ to $s$\;
-            %}
+
         }
     }
     
@@ -616,10 +543,10 @@ We repeated each training run 3 times so that we can be sure that we are getting
 \end{algorithm}
 
 
-
 \subsection{Multiplicative feedback}
-\textbf{Algorithm \ref{alg:multiplicative}} describes the algorithm for training a convolutional neural network using multiplicative feedback in pseudocode.
-
+\label{implmult}
+We apply multiplicative feedback to our network as described in \textbf{Section {\ref{app:multiplicative}}}.
+\textbf{Algorithm \ref{alg:multiplicative}} describes the algorithm for training in pseudocode.
 
 \begin{algorithm}
     \DontPrintSemicolon
@@ -640,7 +567,7 @@ We repeated each training run 3 times so that we can be sure that we are getting
             }
             $lossgen \longleftarrow loss(generated,images)$\;
             $lossclass \longleftarrow loss(predicted,labels)$\;
-            $lossgen.backward()$\;
+            $(lossgen+lossclass).backward()$\;
             $optimizer.step()$ \tcp{update parameters}
         }
     }
@@ -650,299 +577,470 @@ We repeated each training run 3 times so that we can be sure that we are getting
 
 
 \subsection{Using generator output as a second input channel}
+\label{impl:genoutput}
+
+We implement the algorithm described in \textbf{Section \ref{app:genout}}. We first create an empty tensor which is the same size as each batch of images, e.g. [64,3,112,112]. We then concatenate it with the original batch of images, thus creating a batch with size [64,6,112,112]. We do this because the first convolutional layer of our network now takes as input 6 channels. This is equivalent to passing the original 3-channel image into our previous models. In the feedback loop we first use the resulting tensor as input and then we concatenate the original image with the new generated image. \textbf{Algorithm \ref{alg:stacked}} describes the algorithm for training in pseudocode.
+
+\begin{algorithm}
+    \DontPrintSemicolon
+    \KwData{$trainloader$, a collection of all batches of input images\newline$network$, our neural network}
+    \KwResult{$generated$, a batch of reconstructed images\newline
+    $labels$ - the predicted labels for these images.}
+    \Begin{
+        \For{images, labels in trainloader}
+        {
+            $optimizer.zero\_grad()$ \tcp{clear gradients}\;
+            
+            $init \longleftarrow torch.zeroes(images.size)$\;
+            $stacked\_images \longleftarrow torch.cat((images,generated)$\;
+            \tcp{n = number of iterations}
+            \For{i in range(n)} 
+            {
+                $generated,predicted \longleftarrow network.forward(stacked\_images)$\;
+                $stacked\_images \longleftarrow torch.cat((images,generated)$\;
+            }
+            $lossgen \longleftarrow loss(generated,images)$\;
+            $lossclass \longleftarrow loss(predicted,labels)$\;
+            $(lossgen+lossclass).backward()$\;
+            $optimizer.step()$ \tcp{update parameters}
+        }
+    }
+    
+\caption{The algorithm for training a convolutional neural network using a 6-channel input image. }
+\label{alg:stacked}
+\end{algorithm}
+
 \subsection{Using class activation mappings}
+\label{implgradcam}
+We first implement a method for generating the heatmap. This script takes as parameters a single image, a model, the name of a convolutional layer and the name of a fully connected layer. In our case, we will use a pretrained feedforward classifier, the last convolutional layer and the last fully connected layer as advised in \cite{gradcam}. We first save the features of a convolutional layer as a variable, then do a forward pass of the network with the image in order to obtain the predicted probabilities for each class. We then obtain the weights from the last fully connected layer for the class with the highest probability. Finally, we multiply the features from the convolutional layer with the weights from the fully connected layer. This outputs a heatmap which indicates the most discriminative regions for the predicted label.
+
+In comparison with the approaches described in previous sections, in this approach we take a classifier network instead of the combined one.
+We call the method for generating the heatmaps in the forward() method of the network we will train. In this way, our network now outputs a heatmap and a predicted label. We then multiply this heatmap by the original image iteratively.
+\textbf{Algorithm \ref{alg:gradcam}} describes the algorithm for training in pseudocode.
+
+\begin{algorithm}
+    \DontPrintSemicolon
+    \KwData{$trainloader$, a collection of all batches of input images\newline$network$, our neural network}
+    \KwResult{$heatmaps$, a batch of heatmaps showing the most discrminative regions\newline
+    $labels$ - the predicted labels for these images.}
+    \CommentSty{\color{black}}
+    \Begin{
+        \For{images, labels in trainloader}
+        {
+            $optimizer.zero\_grad()$ \tcp{clear gradients}\; 
+            $heatmaps,predicted \longleftarrow network.forward(images)$\;
+            \tcp{n = number of iterations}
+            \For{i in range(n)}
+            {
+                $heatmaps,predicted \longleftarrow network.forward(images*heatmaps)$\;
+            }
+            $lossclass \longleftarrow loss(predicted,labels)$\;
+            $lossclass.backward()$\;
+            $optimizer.step()$
+            \tcp{update parameters}
+        }
+    }
+    
+\caption{The algorithm for training a convolutional neural network using feedback with GradCAM. }\label{alg:gradcam}
+\end{algorithm}
+
+
 
 \section{Summary}
-This chapter discussed the technical details of implementing the project. We first discussed base classes which are implemented and then commented on how the how the data is preprocessed before being fed into the network, then moved on to review the way the models are trained and tested. Finally, this chapter outlined how feedback is implemented in each scenario. 
-
-%You can't talk about everything. Cover the high level first, then cover %important, relevant or impressive details.
-
-%These points apply to the whole dissertation, not just this chapter.
-
-%\emph{Always} refer to figures included, like Figure %\ref{fig:relu}, in the body of the text. Include full, %explanatory captions and make sure the figures look good on the page.
-%You may include multiple figures in one float, as in Figure %\ref{fig:synthetic}, using \texttt{subcaption}, which is enabled in the template.
-
-
-% Figures are important. Use them well.
-%\begin{figure}[htb]
-    %\centering
-    %\includegraphics[width=0.5\linewidth]{images/relu.pdf}    
-
-    %\caption{In figure captions, explain what the reader is %looking at: ``A schematic of the rectifying linear unit, %where $a$ is the output amplitude,
-    %$d$ is a configurable dead-zone, and $Z_j$ is the input %signal'', as well as why the reader is looking at this: 
-    %``It is notable that there is no activation \emph{at all} %below 0, which explains our initial results.'' 
-    %\textbf{Use vector image formats (.pdf) where possible}. Size figures appropriately, and do not make them over-large or too small to read.
-    %}
-
-    % use the notation fig:name to cross reference a figure
-    %\label{fig:relu} 
-%\end{figure}
-
-
-%\begin{figure}[htb] 
-    %\centering
-    %\begin{subfigure}[b]{0.45\textwidth}
-     %   \includegraphics[width=\textwidth]{images/synthetic.png}
-     %   \caption{Synthetic image, black on white.}
-     %   \label{fig:syn1}
-    %\end{subfigure}
-    %~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-      %(or a blank line to force the subfigure onto a new line)
-    %\begin{subfigure}[b]{0.45\textwidth}
-     %   \includegraphics[width=\textwidth]{images/synthetic_2.png}
-     %   \caption{Synthetic image, white on black.}
-      %  \label{fig:syn2}
-    %\end{subfigure}
-    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
-    %(or a blank line to force the subfigure onto a new line)    
-    %\caption{Synthetic test images for edge detection algorithms. %\subref{fig:syn1} shows various gray levels that require an %adaptive algorithm. \subref{fig:syn2}
-    %shows more challenging edge detection tests that have %crossing lines. Fusing these into full segments typically %This is an example of using subfigures, with \texttt{subref}s %in the caption.
-    %}\label{fig:synthetic}
-%\end{figure}
-
-%\clearpage
-
-
-%Equations should be typeset correctly and precisely. Make sure you get parenthesis sizing correct, and punctuate equations correctly 
-%(the comma is important and goes \textit{inside} the equation block). Explain any symbols used clearly if not defined earlier. 
-
-%For example, we might define:
-%\begin{equation}
-    %\hat{f}(\xi) = \frac{1}{2}\left[ \int_{-\infty}^{\infty} f(x) e^{2\pi i x \xi} \right],
-%\end{equation}    
-%where $\hat{f}(\xi)$ is the Fourier transform of the time domain %signal $f(x)$.
-
-
-%Algorithms can be set using \texttt{algorithm2e}, as in Algorithm \ref{alg:metropolis}.
-
-% NOTE: line ends are denoted by \; in algorithm2e
-%\begin{algorithm}
-    %\DontPrintSemicolon
-    %\KwData{$f_X(x)$, a probability density function returing the density at $x$.\; $\sigma$ a standard deviation specifying the spread of the proposal distribution.\;
-    %$x_0$, an initial starting condition.}
-    %\KwResult{$s=[x_1, x_2, \dots, x_n]$, $n$ samples approximately drawn from a distribution with PDF $f_X(x)$.}
-    %\Begin{
-        %$s \longleftarrow []$\;
-        %$p \longleftarrow f_X(x)$\;
-        %$i \longleftarrow 0$\;
-        %\While{$i < n$}
-        %{
-         %   $x^\prime \longleftarrow \mathcal{N}(x, \sigma^2)$\;
-          %  $p^\prime \longleftarrow f_X(x^\prime)$\;
-         %   $a \longleftarrow \frac{p^\prime}{p}$\;
-        %    $r \longleftarrow U(0,1)$\;
-         %   \If{$r<a$}
-         %   {
-        %        $x \longleftarrow x^\prime$\;
-         %       $p \longleftarrow f_X(x)$\;
-         %       $i \longleftarrow i+1$\;
-         %       append $x$ to $s$\;
-        %    }
-      %  }
-   % }
-    
-%\caption{The Metropolis-Hastings MCMC algorithm for drawing %samples from arbitrary probability distributions, 
-%specialised for normal proposal distributions $q(x^\prime|x) = %\mathcal{N}(x, \sigma^2)$. The symmetry of the normal %distribution means the acceptance rule takes the simplified %form.}\label{alg:metropolis}
-%\end{algorithm}
-
-
-
-%If you need to include tables, like Table \ref{tab:operators}, %use a tool like https://www.tablesgenerator.com/ to generate the %table as it is
-%extremely tedious otherwise. 
-
-%\begin{table}[]
-    %\caption{The standard table of operators in Python, along with their functional equivalents from the \texttt{operator} package. Note that table
-    %captions go above the table, not below. Do not add additional rules/lines to tables. }\label{tab:operators}
-    %\tt 
-    %\rowcolors{2}{}{gray!3}
-    %\begin{tabular}{@{}lll@{}}
-    %\toprule
-    %\textbf{Operation}    & \textbf{Syntax}                & \textbf{Function}                            \\ %\midrule % optional rule for header
-    %Addition              & \texttt{a + b}                          & \texttt{add(a, b)}                                    \\
-    %Concatenation         & \texttt{seq1 + seq2}                    & \texttt{concat(seq1, seq2)}                           \\
-    %Containment Test      & \texttt{obj in seq}                     & \texttt{contains(seq, obj)}                           \\
-    %Division              & \texttt{a / b}                          & \texttt{div(a, b) }  \\
-    %Division              & \texttt{a / b}                          & \texttt{truediv(a, b) } \\
-    %Division              & \texttt{a // b}                         & \texttt{floordiv(a, b)}                               \\
-    %Bitwise And           & \texttt{a \& b}                         & \texttt{and\_(a, b)}                                  \\
-    %Bitwise Exclusive Or  & \texttt{a \textasciicircum b}           & \texttt{xor(a, b)}                                    \\
-    %Bitwise Inversion     & \texttt{$\sim$a}                        & \texttt{invert(a)}                                    \\
-    %Bitwise Or            & \texttt{a | b}                          & \texttt{or\_(a, b)}                                   \\
-    %Exponentiation        & \texttt{a ** b}                         & \texttt{pow(a, b)}                                    \\
-    %Identity              & \texttt{a is b}                         & \texttt{is\_(a, b)}                                   \\
-    %Identity              & \texttt{a is not b}                     & \texttt{is\_not(a, b)}                                \\
-    %Indexed Assignment    & \texttt{obj{[}k{]} = v}                 & \texttt{setitem(obj, k, v)}                           \\
-    %Indexed Deletion      & \texttt{del obj{[}k{]}}                 & \texttt{delitem(obj, k)}                              \\
-    %Indexing              & \texttt{obj{[}k{]}}                     & \texttt{getitem(obj, k)}                              \\
-    %Left Shift            & \texttt{a \textless{}\textless b}       & \texttt{lshift(a, b)}                                 \\
-    %Modulo                & \texttt{a \% b}                         & \texttt{mod(a, b)}                                    \\
-    %Multiplication        & \texttt{a * b}                          & \texttt{mul(a, b)}                                    \\
-    %Negation (Arithmetic) & \texttt{- a}                            & \texttt{neg(a)}                                       \\
-    %Negation (Logical)    & \texttt{not a}                          & \texttt{not\_(a)}                                     \\
-    %Positive              & \texttt{+ a}                            & \texttt{pos(a)}                                       \\
-    %Right Shift           & \texttt{a \textgreater{}\textgreater b} & \texttt{rshift(a, b)}                                 \\
-    %Sequence Repetition   & \texttt{seq * i}                        & \texttt{repeat(seq, i)}                               \\
-    %Slice Assignment      & \texttt{seq{[}i:j{]} = values}          & \texttt{setitem(seq, slice(i, j), values)}            \\
-    %Slice Deletion        & \texttt{del seq{[}i:j{]}}               & \texttt{delitem(seq, slice(i, j))}                    \\
-    %Slicing               & \texttt{seq{[}i:j{]}}                   & \texttt{getitem(seq, slice(i, j))}                    \\
-    %String Formatting     & \texttt{s \% obj}                       & \texttt{mod(s, obj)}                                  \\
-    %Subtraction           & \texttt{a - b}                          & \texttt{sub(a, b)}                                    \\
-    %Truth Test            & \texttt{obj}                            & \texttt{truth(obj)}                                   \\
-    %Ordering              & \texttt{a \textless b}                  & \texttt{lt(a, b)}                                     \\
-    %Ordering              & \texttt{a \textless{}= b}               & \texttt{le(a, b)}                                     \\
-    % \bottomrule
-    %\end{tabular}
-    %\end{table}
-
-%Avoid putting large blocks of code in the report (more than a page in one block, for example). Use syntax highlighting if possible, as in Listing \ref{lst:callahan}.
-
-%\begin{lstlisting}[language=python, float, caption={The algorithm for packing the $3\times 3$ outer-totalistic binary CA successor rule into a 
-    %$16\times 16\times 16\times 16$ 4 bit lookup table, running an equivalent, notionally 16-state $2\times 2$ CA.}, label=lst:callahan]
-    %def create_callahan_table(rule="b3s23"):
-        %"""Generate the lookup table for the cells."""        
-        %s_table = np.zeros((16, 16, 16, 16), dtype=np.uint8)
-        %birth, survive = parse_rule(rule)
-
-        %# generate all 16 bit strings
-        %for iv in range(65536):
-            %bv = [(iv >> z) & 1 for z in range(16)]
-            %a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p = bv
-
-            %# compute next state of the inner 2x2
-            %nw = apply_rule(f, a, b, c, e, g, i, j, k)
-            %ne = apply_rule(g, b, c, d, f, h, j, k, l)
-            %sw = apply_rule(j, e, f, g, i, k, m, n, o)
-            %se = apply_rule(k, f, g, h, j, l, n, o, p)
-
-            %# compute the index of this 4x4
-            %nw_code = a | (b << 1) | (e << 2) | (f << 3)
-            %ne_code = c | (d << 1) | (g << 2) | (h << 3)
-            %sw_code = i | (j << 1) | (m << 2) | (n << 3)
-            %se_code = k | (l << 1) | (o << 2) | (p << 3)
-
-            %# compute the state for the 2x2
-            %next_code = nw | (ne << 1) | (sw << 2) | (se << 3)
-
-            %# get the 4x4 index, and write into the table
-            %s_table[nw_code, ne_code, sw_code, se_code] = next_code
-
-        %return s_table
-
-%\end{lstlisting}
+This chapter discussed the technical details of implementing the project. We first discussed packages and classes included in PyTorch which we will use in the implementation of our models. We then commented on how the how the data is preprocessed and loaded before being fed into the network. Subsequently, we moved on to discuss the way the models are trained and tested. Finally, we provided a discussion on how we implement each feedback mechanism. 
 
 %==================================================================================================================================
 \chapter{Evaluation}
 \label{chap:evaluation}
-%How good is your solution? How well did you solve the general problem, %and what evidence do you have to support that?
+This chapter provides an overview of the datasets used, then explains how the performance of the networks will be evaluated. Subsequently, we provide and analyse graphs and tables of losses, accuracies and confusion matrices on the training, validation and test sets. Finally, we present a concluding discussion of these results.
+
 \section{Overview}
-We evaluated the performance of the project using \cite{Samagaio}'s dataset as well as SVHN(\cite{svhn}) and CIFAR(\cite{CIFAR}). 
+We evaluated the performance of the project using \cite{Samagaio}'s dataset as well as CIFAR(\cite{CIFAR}). 
 
-\cite{Samagaio}'s dataset is called Intern's Objects. It contains frames from videos of 20 objects of different shapes and colours. The videos were taken against the same background. This allows the neural networks to focus only on the features of the objects themselves. In this way, we are certain that the background is not contributing to object classification. The dataset was divided into training and testing datasets, each of which comprised of different video clips. Due to memory constraints, we used a subset with randomly chosen images from each class for evaluating the implemented models.
+\cite{Samagaio}'s dataset is called Intern's Objects. It contains frames from videos of 20 objects of different shapes and colours. The objects were moved around, thus they are in different positions in each image.
+The videos were taken against the same background. This allows the neural networks to focus only on the features of the objects themselves. In this way, the impact of the background on the classification is limited. Given the fact that the objective of this investigation is to suppress pixels which do not contribute to image classification (e.g. background), this dataset proves to be useful for this project.
 
-We also used two datasets which are readily available in PyTorch.
-SVHN (Street View House Numbers) is a dataset of colour images which show house numbers. The task of the dataset is to recognise the digit located at the centre of the image.
-CIFAR includes 60 000 32x32 images, comprising 10 objects. There are 50 000 training images and 10 000 test images.
+The dataset was then divided into training and testing datasets, each of which comprised of different video clips. Due to memory constraints, we used a subset with randomly chosen images from each class for evaluating the implemented models and resized them to 112x112. \textbf{Figure \textbf{\ref{fig:alvaroexamples}}} provides examples of pictures of objects used in the dataset.
 
-For each implemented network we measured loss and accuracy on the training and validation datasets. We then summarised these in graphs so that we can analyse them easily. Finally, we evaluated our models on the test dataset by looking at test loss as well as overall accuracy and per-class accuracy. We then looked at a confusion matrix so that we can analyse common misclassifications of objects. In the case of evaluating models which utilise feedback, we visualised the generated images to see which pixels contribute to the classification the most. 
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{images/frame1105.png}
+        \caption{Stapler.}
+        \label{fig:img1}
+    \end{subfigure}
+    ~ %add desired spacing between images, e. g. ~, \quad, \qquad, \hfill etc. 
+      %(or a blank line to force the subfigure onto a new line)
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{images/frame1272.png}
+        \caption{Deodorant.}
+        \label{fig:img2}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{images/frame1631.png}
+        \caption{Tissues.}
+        \label{fig:img3}
+    \end{subfigure}
+    \caption{Examples of images from Intern's Objects Dataset. \subref{fig:img1} shows a stapler. \subref{fig:img2} shows a deodorant. \subref{fig:img3} shows a pack of tissues.
+    }\label{fig:alvaroexamples}
+\end{figure}
 
 
+We also used a dataset which is readily available in PyTorch.CIFAR includes 60 000 32x32 images, comprising of  10 objects. There are 50 000 training images and 10 000 test images. Section \ref{cifarres} in the appendix provides numerical results on this dataset.
 
+For each implemented network we measured loss and accuracy on the training and validation dataset. These metrics are useful to track the performance of the model at each epoch.
+
+We then summarised these in graphs so that we can analyse them easily. The plots were generated using Matplotlib (\cite{matplotlib}). The graphs are useful for investigating the relationship between the number of epochs and the training and validation losses and/or accuracies. In particular, by plotting these in a graph we can easily whether a model is overfitting or underfitting by looking at how the difference between training loss and validation loss changes with the number of epochs.
+
+Next, we evaluated our models on the test dataset by looking at test loss as well as overall accuracy and per-class accuracy. We then presented a confusion matrix. This matrix is used to analyse the per-class accuracy and to see common occurrences of misclassified objects. The y-axis contains the true labels while the x-axis contains the predicted labels. The diagonal shows the number of images for each object which correctly classified. 
+
+Finally, in the case of evaluating models which utilise feedback, we look at a accuracy-per-iteration graph. The x-axis for this graph shows the number of feedback iterations while the y-axis shows the accuracy on each iteration. This graph is useful for choosing an optimal number of iterations and looking at whether the accuracy is increasing or decreasing with respect to the number of iterations.
+
+We repeated each training run 3 times so that we are certain that our results are not produced by chance. For final analysis we then take the average from these three runs. We trained all of our networks using identical conditions - we trained them for 50 epochs, used the Adam optimizer with a learning rate of 0.001. We explored using learning rates of 0.01 and 0.0001, however 0.001 provided the best results. Furthermore, this learning rate is recommended by the documentation of PyTorch.
 
 \section{Simple classifier}
+\textbf{Table \ref{tab:evalclass}} presents the accuracy and loss for the training, validation and test set across three runs on the Intern's Objects as well as the time it took to train the simple network across three runs. The final row of the table shows the average of the metrics - we will use these as our baseline against which we will measure our feedback networks.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Time \\ (min)\end{tabular}} \\ \hline
+1            & 99.5                                                             & 0.015589            & 98.125                                                                 & 0.068028                                                            & 93.4                                                                & 0.3109             & 73                                                                   \\ \hline
+2            & 99.59                                                             & 0.01573             & 98.25                                                                  & 0.07279                                                             & 90.6                                                                & 0.389              & 69                                                                   \\ \hline
+3            & 99.56                                                             & 0.001685            & 98.125                                                                 & 0.080717                                                            & 91.3                                                                & 0.4284             & 68                                                                   \\ \hline
+Avg      & 99.55 $\pm 0.035$                                                             & 0.011 $\pm 0.006
+$            & 98.17 $\pm 0.058
+$                                                               & 0.073 $\pm 0.005
+$                                                            & 91.77 $\pm 1.189
+$                                                          & 0.3761 $ \pm 0.048$
+             & 70                                                                   \\ \hline
+\end{tabular}
+\caption{Evaluation of a simple classifier on Intern's Objects dataset across three runs. Last row outlines the average of each metric}
+\label{tab:evalclass}
+\end{table}
+
+For the training and validation set, \textbf{Figures \ref{fig:plainloss}} and \textbf{\ref{fig:plainaccuracy}} show the loss and accuracy, respectively, on the Intern's Objects dataset.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/Model 1 Loss Alvaro.png}
+    \caption{Loss per epoch on training and validation set on the simple classifier on Intern's Objects dataset}
+    \label{fig:plainloss} 
+\end{figure}
+
+\begin{figure} [H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/Model 1 Accuracy Alvaro.png}
+    \caption{Accuracy per epoch on training and validation set on the simple classifier on Intern's Objects dataset}
+    \label{fig:plainaccuracy} 
+\end{figure}
+
+\textbf{Figure \ref{fig:confusionplain}} illustrates a confusion matrix derived from the performance of our simple classifier on the test set. An example of common misclassification in this case is that five pictures of cases have been predicted as pictures of erasers. We looked at some of the misclassifications and it appears that the network commonly misclassified objects of the same colour (case-eraser, mouse-speaker).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{images/confusionplain.png}
+    \caption{Confusion matrix on the test set for simple classifier}
+    \label{fig:confusionplain} 
+\end{figure}
+
 \section{Combined model}
+\textbf{Table \ref{tab:evalcombined}} presents the accuracy and loss for the training, validation and test set across three runs on the Intern's Objects as well as the time it took to train the combined network across three runs. As explained in Section \ref{app:combined}, scaling the classifier's and autoencoder's individual losses may result in negative losses.
+The final row of the table shows the average of the metrics.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Time \\(min)\end{tabular}} \\ \hline
+1            & 99.46875                                                          & -0.53237            & 98.125                                                                 & -0.50919                                                            & 92.3                                                                & 0.8402             & 65                                                                   \\ \hline
+2            & 99.28125                                                          & -0.53934            & 97.875                                                                 & -0.5393                                                             & 92.2                                                                & 0.7109             & 64                                                                   \\ \hline
+3            & 99.25                                                             & 0.03335             & 97.125                                                                 & 0.135007                                                            & 92.5                                                                & 0.3271             & 63                                                                   \\ \hline
+Avg      & 99.33 $\pm 0.118$                                                          & -0.346 $\pm 0.328$            & 97.70 $\pm 0.52$                                                               & -0.304 $\pm 0.380$                                                           & 92.33 $\pm 0.152$                                                                & 0.626 $\pm 0.266$           & 64                                                                   \\ \hline
+\end{tabular}
+\caption{Evaluation of the combined network on Intern's Objects dataset across three runs. Last row outlines the average of each metric}
+\label{tab:evalcombined}
+\end{table}
+
+
 \section{Feedback architectures}
+We then evaluated the results of applying different feedback mechnanisms to our implementations. Due to time constraints we limited the number of feedback iterations to 10.
+
 \subsection{Subtractive feedback}
+\label{evalsubtr}
+\textbf{Table \ref{tab:subtractive}} presents the accuracy and loss for the training, validation and test set across the runs on the Intern's Objects set as well as the time it took to train the network using subtractive feedback. The final row of the table shows the average of the metrics.
+
+Compared with the results from \textbf{Table \ref{tab:evalclass}} and we can see that on average test accuracy has improved by 1.7\%. Therefore, this shows that applying subtractive feedback to a pretrained feedforward network indeed improves classification rate.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Time \\(min)\end{tabular}} \\ \hline
+1            & 99.65625                                                          & 0.04818             & 97.5                                                                   & 0.226517                                                            & 93.1                                                                & 0.4886             & 81                                                                   \\ \hline
+2            & 99.78125                                                          & 0.04467             & 97.625                                                                 & 0.19392                                                             & 93.5                                                              & 0.462              & 79                                                                   \\ \hline
+3            & 99.75                                                             & 0.04484             & 97.75                                                                  & 0.196584                                                            & 93.3                                                                & 0.4704             & 81                                                                   \\ \hline
+Avg      & 99.73 $\pm 0.053$
+                                                          & 0.0459 $\pm 0$ 
+            & 97.625 $\pm 0.102 $                                                                 & 0.2056 $\pm 0.014$                                                            & 93.3 $\pm 0.163$                                                          & 0.473 $\pm 0.011$          & 80.33                                                          \\ \hline
+\end{tabular}
+\caption{Evaluation of the network using subtractive feedback on Intern's Objects dataset across three runs. Last row outlines the average of each metric}
+\label{tab:subtractive}
+\end{table}
+
+For the training and validation set, \textbf{Figures \ref{fig:subtractiveloss}} and \textbf{\ref{fig:subtractiveaccuracy}} show the loss and accuracy, respectively.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/Model 5 Loss.png}
+    \caption{Loss per epoch on training and validation set on subtractive feedback model on Intern's Objects dataset}
+    \label{fig:subtractiveloss} 
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/Model 5 Accuracy Alvaro.png}
+    \caption{Accuracy per epoch on training and validation set on subtractive feedback model on Intern's Objects dataset}
+    \label{fig:subtractiveaccuracy} 
+\end{figure}
+
+\textbf{Figure \ref{fig:subtrav}} demonstrates the average accuracy on each iteration from the three runs on the network. Therefore, it can be concluded from this graph that the accuracy of a neural network which uses subtractive feedback is increasing with the number of iterations, reaching its highest value at iteration number 8.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/Subtractive average.png}
+    \caption{Average accuracy per iteration on the test set using subtractive feedback}
+    \label{fig:subtrav} 
+\end{figure}
+
+\textbf{Figure \ref{fig:subtractivemask}} illustrates the original images and generated outputs. The first columns depicts the original image, the second column illustrates the generated output, the third column is the input to the network, e.g. image-output*alpha. We were unable to generate sensible masks, a possible reason for his is that the network is not deep enough.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/Subtractive images.png}
+    \caption{Examples of illustrations of images and the generated masks when subtractive feedback is applied}
+    \label{fig:subtractivemask} 
+\end{figure}
+
+
+
+
 \subsection{Multiplicative feedback}
+
+\textbf{Table \ref{tab:multiplicative}} presents the accuracy and loss for the training, validation and test set across three runs on the Intern's Objects set as well as the time it took to train the network using multiplicative feedback. The final row of the table shows the average of the metrics.
+Compared with the results from \textbf{Table \ref{tab:evalclass}} we can see that on average test accuracy has degraded by 10\%. Therefore, this shows that multiplicative feedback does not improve classification rate.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Time \\(min)\end{tabular}} \\ \hline
+1            & 99.15                                                             & 0.0895              & 92                                                                     & 0.33605                                                             & 88                                                                & 0.572              & 120                                                                  \\ \hline
+2            & 98.3475                                                           & 0.1342              & 91.5                                                                   & 0.43645                                                             & 87.5                                                              & 0.5748             & 145                                                                  \\ \hline
+3            & 84.3125                                                           & 0.634               & 76.125                                                                 & 1.0821                                                              & 72                                                                & 1.1577             & 135                                                                  \\ \hline
+Avg      & 93.93 $\pm 8.34$                                                          & 0.286 $\pm 0.302$              & 86.541  $\pm 9.024$                                                             & 0.618 $\pm 0.404$                                                              & 82.5 $\pm 9.096$                                                             & 0.768 $\pm 0.337$          & 133.33                                                               \\ \hline
+\end{tabular}
+\caption{Evaluation of the network using multiplicative feedback on Intern's Objects dataset across three runs. Last row outlines the average of each metric}
+\label{tab:multiplicative}
+\end{table}
+
+For the training and validation set, \textbf{Figures \ref{fig:subtractiveloss}} and \textbf{\ref{fig:subtractiveaccuracy}} show the loss and accuracy, respectively. These graphs show that, in comparison with the subtractive feedback approach described in \textbf{Section \ref{evalsubtr}}, this approach requires a larger number of epochs to train. Trained on 100 epochs, it still did not manage to improve on the classification rate of the baseline classifier.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/Model 7 Loss.png}
+    \caption{Loss per epoch on training and validation set on multiplicative feedback model on Intern's Objects dataset}
+    \label{fig:multiplicativeloss} 
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/Model 7 Accuracy.png}
+    \caption{Accuracy per epoch on training and validation set on multiplicative feedback model on Intern's Objects dataset}
+    \label{fig:multiplicativeaccuracy} 
+\end{figure}
+
+\textbf{Figure \ref{fig:multiplav}} demonstrates the average accuracy on each iteration from the three runs on the network. We can see the accuracy is increasing with the number of iterations, reaching a peak at iteration 8.
+It can be concluded from this graph that the accuracy of a feedback network which uses multiplicative feedback is increasing with the number of iterations, despite maintaining a significantly lower accuracy rate compared with the baseline classifier and other feedback approaches.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/Multiplicative average.png}
+    \caption{Average accuracy per iteration on the test set using multiplicative feedback}
+    \label{fig:multiplav} 
+\end{figure}
+
+\textbf{Figure \ref{fig:multiplicativemask}} illustrates the original images and generated outputs. The first columns depicts the original image, the second column illustrates the generated output, the third column is the input to the network, e.g. image*output*alpha. We were not able to sucessfully create masks, a possible reason for this is the depth of the network.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/Multiplicative images.png}
+    \caption{Examples of illustrations of images and the generated masks when appliyng multiplicative feedback}
+    \label{fig:multiplicativemask} 
+\end{figure}
+
 \subsection{Using generator output as a second input channel}
+
+\textbf{Table \ref{tab:genout}} presents the accuracy and loss for the training, validation and test set across three runs on the Intern's Objects set as well as the time it took to train the network using the model which takes a 6-channel image as input. The final row of the table shows the average of the metrics.
+
+Compared with the results from \textbf{Table \ref{tab:evalclass}} we can see that on average test accuracy has improved by 2.1\%. Therefore, this shows that a network using the generator's output as a second input channel indeed improves classification rate.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Time \\(min)\end{tabular}} \\ \hline
+1            & 98.375                                                            & 0.034611            & 98.375                                                                 & 0.1103                                                              & 93.5                                                              & 0.3339             & 84                                                                   \\ \hline
+2            & 99.875                                                            & 0.03293             & 98.5                                                                   & 0.11259                                                             & 94.12                                                             & 0.3289             & 84                                                                   \\ \hline
+3            & 99.875                                                            & 0.0299              & 98.125                                                                 & 0.11735                                                             & 93.8                                                              & 0.3017             & 84                                                                   \\ \hline
+Avg      & 99.375 $\pm 0.707$                                                           & 0.032 $\pm 0.001$             & 98.33 $\pm 0.155$                                                               & 0.113 $\pm 0.002 $                                                           & 93.806 $\pm 0.253$                                                          & 0.321 $\pm 0.014$            & 84                                                                   \\ \hline
+\end{tabular}
+\caption{Evaluation of the network which takes the generator's output as a second input channel on Intern's Objects dataset across three runs. Last row outlines the average of each metric}
+\label{tab:genout}
+\end{table}
+
+For the training and validation set, \textbf{Figures \ref{fig:genoutloss}} and \textbf{\ref{fig:genoutaccuracy}} show the loss and accuracy, respectively.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/Loss model10.png}
+    \caption{Loss per epoch on training and validation set on model using generator output as second input channel on Intern's Objects dataset}
+    \label{fig:genoutloss} 
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/Accuracy model10.png}
+    \caption{Accuracy per epoch on training and validation set on model using generator output as second input channel on Intern's Objects dataset}
+    \label{fig:genoutaccuracy} 
+\end{figure}
+
+\textbf{Figure \ref{fig:genoutav}} demonstrates the average accuracy on each iteration from the three runs on the network. We can see that there is a very steep increase on the first two iterations and for the remaining iterations there is an increase of about 0.1 \% per iteration.
+It can be concluded from this graph that the accuracy of a feedback network which takes a 6-channel image formed of the original image and the generated output is increasing with the number of iterations, reaching its highest value at the last iteration.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/GenOut Average.png}
+    \caption{Average accuracy per iteration on the test set using model which takes a 6-channel image as input}
+    \label{fig:genoutav} 
+\end{figure}
+
+\textbf{Figure \ref{fig:genoutmask}} illustrates the original images and generated outputs. The first columns depicts the original image, the second column illustrates the generated output. We were not able to successfully generate masks, a possible reason for this is the depth of the network.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{images/GenOut images.png}
+    \caption{Examples of illustrations of images and the generated masks when the network takes a 6-channel image as input}
+    \label{fig:genoutmask} 
+\end{figure}
+
 \subsection{Using class activation mappings}
+\textbf{Table \ref{tab:gradcam}} shows the accuracy and loss for the training, validation and test set across three runs on the Intern's Object set as well as the time it took to train the network using a product of the original image and a heatmap of the class activations. The final row of the table shows the average of the metrics.
+
+Compared with the results from \textbf{Table \ref{tab:evalclass}}, we can see that on average the test accuracy has degraded by 3.2\%. Therefore, this shows that a network using the product of an image and its class activations mapping does not improve classification rate.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Time \\(min)\end{tabular}} \\ \hline
+1            & 92.8125                                                           & 0.2279              & 91.375                                                                 & 0.3075                                                              & 89.2                                                              & 0.4195             & 240                                                                  \\ \hline
+2            & 94.3125                                                           & 0.19556             & 91.625                                                                 & 0.31493                                                             & 89.1                                                              & 0.4463             & 202                                                                  \\ \hline
+3            & 93.84375                                                          & 0.18531             & 91.125                                                                 & 0.3126                                                              & 87.4                                                              & 0.4764             & 250                                                                  \\ \hline
+Avg      & 93.656 $\pm 0.626$                                                          & 0.203 $\pm 0.018$           & 91.375 $\pm 0.204$                                                                 & 0.311  $\pm 0.003$                                                          & 88.567  $\pm 0.825$                                                        & 0.447  $\pm 0.023$           & 230.67                                                               \\ \hline
+\end{tabular}
+\caption{Evaluation of the network which takes the product of the image and a heatmap showing the most discriminative regions on Intern's Objects dataset across three runs. Last row outlines the average of each metric}
+\label{tab:gradcam}
+\end{table}
+
+For the training and validation set, \textbf{Figures \ref{fig:gradcamloss}} and \textbf{\ref{fig:gradcamaccuracy}} show the loss and accuracy, respectively.
+
+\begin{figure}[H]
+    \centering
+\includegraphics[width=0.9\linewidth]{images/gradcam_Loss _.png}
+    \caption{Loss per epoch on training and validation set on model using feedback with GradCAM}
+    \label{fig:gradcamloss} 
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{images/gradcam_Accuracy _.png}
+    \caption{Accuracy per epoch on training and validation set on model using using feedback with GradCAM}
+    \label{fig:gradcamaccuracy} 
+\end{figure}
+
+\textbf{Figure \ref{fig:gradcamav}} demonstrates the average accuracy on each iteration from the three runs on the network. Due to time constraints we were able to train this network using just five iterations. In contrast with results from previous feedback methods, we can see that the classification rate decreases after each iteration.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/GradCAM Average.png}
+    \caption{Average accuracy per iteration on the test set using GradCAM}
+    \label{fig:gradcamav} 
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.1\linewidth]{images/Gradcam1.png}
+    \caption{Examples of illustrations of images and their class activations where the focus reshifted towards the object}
+    \label{fig:gradcammask} 
+\end{figure}
+
+Nevertheless, even though classification rate did not improve, the heatmaps demonstrated shifting the attention of the network from the background towards the object after retraining with feedback.
+\textbf{Figure \ref{fig:gradcammask}} illustrates examples where this was the case.
+
+The figure consists of the following columns
+\begin{itemize}
+    \item First column shows the original image
+    \item Second column illustrates the class activations
+    \item Third column overlays the original image with the class activations
+    \item Fourth column illustrates the class activations after the network was trained using feedback
+    \item Fifth column shows the input to the network on the last iteration, e.g. the original image multiplied by the class activations
+\end{itemize}
+
+The first two rows depict cases in which the network is not focusing as much on the background anymore after retraining, but was almost exclusively looking at the object only, this is evident especially on the second row where the network did not focus at all on the jar of coffee, but after applying feedback it was looking only at the lid of the jar.
+
+The next two rows are examples of images of staplers - we can see that the network was initially focusing on just the bottom part of the stapler, but after applying feedback it was focusing on the whole stapler. Indeed, in the last column we can see how the original image was modified - the background has been suppressed, while the foreground (e.g. the object) was brought forward.
+
+\section{Conclusion}
+From the analysis described in the sections above, we can conclude that two feedback approaches increase the overall performance of the network - subtractive feedback and using a network which takes the generator's output as a second input channel. \textbf{Table \ref{feedbackall}} provides an overview of the average results of all implemented techniques across three runs, compared with a feedforward network. From this table, we can conclude that the best performance was provided by using a network which takes the generator's output as a second input channel. While we were unable to successfully generate segmentation masks, we demonstrated that incorporating class activation mappings into the input of the network shifts the attention of the network towards the object.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|l|}
+\hline
+\textbf{Type}                                                     & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Time \\(min)\end{tabular}} \\ \hline
+\begin{tabular}[c]{@{}l@{}}Baseline\\ classifier\end{tabular}     & 99.55                                                             & 0.011001            & 98.167                                                               & 0.073                                                            & 91.767                                                            & 0.3761             & 70                                                                   \\ \hline
+\begin{tabular}[c]{@{}l@{}}Subtractive\\ feedback\end{tabular}    & 99.729                                                          & 0.0458            & 97.625                                                                 & 0.205                                                            & 93.3                                                              & 0.473           & 80.33                                                                \\ \hline
+\begin{tabular}[c]{@{}l@{}}Multiplicative\\ feedback\end{tabular} & 93.9366                                                          & 0.285              & 86.541                                                               & 0.618                                                              & 82.5                                                              & 0.768           & 133.33                                                               \\ \hline
+\begin{tabular}[c]{@{}l@{}}Second input\\ channel\end{tabular}    & 99.375                                                            & 0.032             & 98.33                                                                  & 0.113                                                            & 93.807                                                          & 0.321             & 84                                                                   \\ \hline
+GradCAM                                                           & 93.656                                                          & 0.202            & 91.375                                                                 & 0.312                                                            & 88.5667                                                          & 0.447             & 230                                                                  \\ \hline
+\end{tabular}
+\caption{Comparison between different feedback methods on Intern's Objects dataset}
+\label{feedbackall}
+\end{table}
+
+
+
 \section{Summary}
-This chapter commented on the evaluation of the project.Firstly, we described the main dataset that we used for evaluation. Then, the overall evaluation strategy was discussed. Subsequently, numerical results such as loss, accuracy and confusion matrices were presented for each type of network. Finally, we provided an analysis of these results.
-
-%\begin{itemize}
-%    \item
-%        Ask specific questions that address the general problem.
-%    \item
-%        Answer them with precise evidence (graphs, numbers, statistical
-%        analysis, qualitative analysis).
-%    \item
-%        Be fair and be scientific.
-%    \item
-%        The key thing is to show that you know how to evaluate your %work, not
-%        that your work is the most amazing product ever.
-%\end{itemize}
-
-%Make sure you present your evidence well. Use appropriate %visualisations, 
-%reporting techniques and statistical analysis, as appropriate. The %point is not
-%to dump all the data you have but to present an argument well supported %by evidence gathered.
-
-%If you use numerical evidence, specify reasonable numbers of %significant digits; don't state ``18.41141\% of users were successful'' %if you only had 20 users. If you average \textit{anything}, present %both a measure of central tendency (e.g. mean, median) \textit{and} a %measure of spread (e.g. standard deviation, min/max, interquartile %range).
-
-%You can use \texttt{siunitx} to define units, space numbers neatly, and %set the precision for the whole LaTeX document. 
-
-% setup siunitx to have two decimal places
-%\sisetup{
-%	round-mode = places,
-%	round-precision = 2
-%}
-
-%For example, these numbers will appear with two decimal places: %\num{3.141592}, \num{2.71828}, and this one will appear with reasonable %spacing \num{1000000}.
-
-
-
-%If you use statistical procedures, make sure you understand the process %you are using,
-%and that you check the required assumptions hold in your case. 
-
-%If you visualise, follow the basic rules, as illustrated in Figure %\ref{fig:boxplot}:
-%\begin{itemize}
-%\item Label everything correctly (axis, title, units).
-%\item Caption thoroughly.
-%\item Reference in text.
-%\item \textbf{Include appropriate display of uncertainty (e.g. error %bars, Box plot)}
-%\item Minimize clutter.
-%\end{itemize}
-
-%See the file \texttt{guide\_to\_visualising.pdf} for further %information and guidance.
-
-%\begin{figure}[htb]
-    %\centering
-    %\includegraphics[width=1.0\linewidth]{images/boxplot_finger_distance.pdf}    
-
-    %\caption{Average number of fingers detected by the touch sensor at different heights above the surface, averaged over all gestures. Dashed lines indicate
-    %the true number of fingers present. The Box plots include %bootstrapped uncertainty notches for the median. It is clear %that the device is biased toward 
-    %undercounting fingers, particularly at higher $z$ distances.
-    %}
-
-    % use the notation fig:name to cross reference a figure
-    %\label{fig:boxplot} 
-%\end{figure}
-
+This chapter commented on the evaluation of the project. Firstly, we provided a description on the datasets that we used. Then, the overall evaluation strategy was discussed. Subsequently, numerical results such as loss, accuracy and confusion matrices were presented for each type of network. Finally, we provided an analysis of these results.
 
 %==================================================================================================================================
 \chapter{Conclusion}
 \label{chap:conclusion}
-%Summarise the whole project for a lazy reader who didn't read the rest (e.g. a prize-awarding committee). This chapter should be short in most dissertations; maybe one to three pages.
-%\begin{itemize}
-    %\item
-        %Summarise briefly and fairly.
-    %\item
-        %You should be addressing the general problem you introduced in the
-        %Introduction.        
-    %\item
-        %Include summary of concrete results (``the new compiler ran 2x
-        %faster'')
-    %\item
-        %Indicate what future work could be done, but remember: \textbf{you
-        %won't get credit for things you haven't done}.
-%\end{itemize}
+This chapter provides a summary of the project, reflects on it and discusses suggestions for further work.
 
 \section{Summary}
-%Summarise what you did; answer the general questions you asked in the introduction. What did you achieve? Briefly describe what was built and summarise the evaluation results.
+The aim of this project was to explore feedback mechanisms for convolutional neural networks in computer vision problems. We investigated whether feedback can be incorporated in a neural network in order to generate segmentation masks of objects and thus focus the attention of the network on these objects. Our approach was to extend a convolutional network to be able to reconstruct images as well. We then defined feedback as recursively modifying the input to the network - we did this by using a combination of the input and the generated output. We looked into four methods - subtractive feedback, multiplicative feedback, using the generated output as a second input channel and using a heatmap of the class activations. We demonstrated an improvement of the classification rate in the cases of subtractive feedback and a network which uses the generated output as a second input channel. While in these cases we were unable to generate sensible segmentation masks, in the case of using class activation heatmaps, we demonstrated that by multiplying the image by the heatmap, we were able to shift the attention of the network from parts of the background towards the object itself.
 
 \section{Reflection}
-%Discuss what went well and what didn't and how you would do things differently if you did this project again.
+Working on this project has been a very rewarding process for me. I am grateful that I was fortunate enough to work on a deep learning project. As a newcomer, the first few weeks of understanding concepts important for this project was hard of me, but the difficulties that I had helped me solidify my knowledge. I appreciated the research aspect of this project and I really enjoyed reading and analysing papers on related topics.
 
 \section{Future work}
-%Discuss what you would do if you could take this further -- where would the interesting directions to go next be? (e.g. you got another year to work on it, or you started a company to work on this, or you pursued a PhD on this topic)
+There is a number of ways that this work could be built upon. To begin with, instead of developing networks from scratch we could use pretrained models such as ResNet (\cite{resnet}) or VGG (\cite{vgg}). We can also look into using Long-Term Short-Memory networks (\cite{lstm}). 
+Furthermore, we could combine the work done on this project with state-of-the-art segmentation techniques such as PiCaNet  (\cite{picanet}).
+
+Another approach worth taking would be to refine the way feedback is incorporate with class activation mappings. When generating the heatmap, we could apply a threshold or a Sigmoid function so that the heatmap will be binary. Further suggestions are  examining refining the input to the network and determining a suitable loss function so that the generator and the classifier can be further more coupled and a more accurate heatmap can be generated.
 
 %==================================================================================================================================
 %
@@ -954,28 +1052,119 @@ This chapter commented on the evaluation of the project.Firstly, we described th
 
 \chapter{Appendices}
 
-%Use separate appendix chapters for groups of ancillary material that %support your dissertation. 
-%Typical inclusions in the appendices are:
+\section{Activation functions}
+\label{activation}
+The activation function decides whether a neuron should be activated or not. The purpose of using it is to introduce non-linearity into the output of a neuron. This section describes activation functions that we deemed useful for the implementation of this project.
 
-%\begin{itemize}
-%\item
- % Copies of ethics approvals (you must include these if you needed to get them)
-%\item
-  %Copies of questionnaires etc. used to gather data from subjects. %Don't include
-  %voluminous data logs; instead submit these electronically alongside your source code.
-%\item
-  %Extensive tables or figures that are too bulky to fit in the main body of
-  %the report, particularly ones that are repetitive and summarised in the body.
-%\item Outline of the source code (e.g. directory structure), 
-   %or other architecture documentation like class diagrams.
-%\item User manuals, and any guides to starting/running the software. 
-%Your equivalent of \texttt{readme.md} should be included.
+\subsection{Rectified linear unit}
+The rectified linear unit function (ReLU) was introduced by \cite{relu} and is defined as
+\begin{equation}
+    f(x)=x^{+}=\max(0,x)
+\end{equation}
 
-%\end{itemize}
+\cite{dyingrelu} demonstrated that sometimes the ReLU neurons may become inactive and in this way only zeroes would be output for any input. This means that no gradients flow backward through the neuron. Consequently, this could have a negative effect on the performance of the network. A possible mitigation is to use the Leaky ReLU function instead.
 
-%\textbf{Don't include your source code in the appendices}. It will be
-%submitted separately.
+\cite{leakyrelu} defined the Leaky ReLU function as
+\begin{equation}
+    f(x)={\begin{cases}x&{\text{if }}x>0,\\0.01x&{\text{otherwise}}.\end{cases}}
+\end{equation}
+This function introduces a small non-zero gradient when a neuron is not active.
 
+\subsection{Hyperbolic tangent}
+A hyperbolic function is a trigonometric function which is defined for a hyperbola instead of a circle. 
+
+An example of a suitable activation non-linear function is the hyperbolic tangent. It is defined as
+\begin{equation}
+    f(x)=\tanh(x)={\frac {(e^{x}-e^{-x})}{(e^{x}+e^{-x})}}
+\end{equation}
+
+\subsection{Softmax}
+The Softmax function is an activation function used for mapping the output of a network to a probability distribution over the predicted output classes. For i = 1,...,j it is defined as
+
+\begin{equation}
+    f_{i}({\vec {x}})={\frac {e^{x_{i}}}{\sum _{j=1}^{J}e^{x_{j}}}} 
+\end{equation}.
+
+We will be applying the LogSoftmax function on the output layer which is just the function described above, followed by a logarithm. This will provide us with a vector which contains the probabilities of an image belonging to each possible class.
+
+\section{Additional results}
+\label{cifarres}
+Following the procedures outline in \textbf{Chapter \ref{chap:evaluation}}, this section provides additional results on the CIFAR dataset.
+
+\textbf{Table \ref{tab:cifarplain}} shows the accuracy and loss on the simple classifier for the training, validation and test set across three runs. The final rows of the table shows the average of the metrics.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} \\ \hline
+1            & 95.8925                                                           & 0.132               & 78.45                                                                  & 0.716                                                               & 78.9                                                              & 0.9711             \\ \hline
+2            & 95.88                                                             & 0.1302              & 78.63                                                                  & 0.679                                                               & 77.9                                                              & 0.9452             \\ \hline
+3            & 95.805                                                            & 0.133               & 78.86                                                                  & 0.671                                                               & 78.3                                                              & 1.0719             \\ \hline
+Avg      & 95.86 $\pm 0.038$                                                            & 0.132 $\pm 0.001$              & 78.65   $\pm 0.167$                                                               & 0.689  $\pm 0.0195$                                                             & 78.37 $\pm 0.41$                                                            & 0.997  $\pm 0.054$            \\ \hline
+\end{tabular}
+\caption{Evaluation of a simple classifier on CIFAR across three runs. Last row outlines the average of each metric}
+\label{tab:cifarplain}
+\end{table}
+
+\textbf{Table \ref{tab:cifarcombined}} shows the accuracy and loss on the combined network for the training, validation and test set across three runs. The final rows of the table shows the average of the metrics.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} \\ \hline
+1            & 95.745                                                            & 0.158               & 79.35                                                                  & 1.011                                                               & 79.3                                                              & 1.011              \\ \hline
+2            & 95.91                                                             & 0.154               & 79.63                                                                  & 0.718                                                               & 77.6                                                              & 0.876              \\ \hline
+3            & 95.82                                                             & 0.156               & 79.27                                                                  & 0.7202                                                              & 79.2                                                              & 0.961              \\ \hline
+Avg      & 95.86   $\pm 0.0674
+$                                                          & 0.156 $\pm 0.00142
+$              & 79.42      $\pm 0.1543
+$                                                            & 0.816   $\pm 0.137$                                                            & 78.7  $\pm 0.778$                                                            & 0.949 $\pm 0.055$             \\ \hline
+\end{tabular}
+\caption{Evaluation of a combined netwok on CIFAR across three runs. Last row outlines the average of each metric}
+\label{tab:cifarcombined}
+\end{table}
+
+\textbf{Table \ref{tab:cifarsubtractive}} shows the accuracy and loss on the network using subtractive feedback for the training, validation and test set across three runs. The final rows of the table shows the average of the metrics. From this table we can conclude that subtractive feedback has improved the accuracy rate of the baseline classifier by 0.5\%.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy (\%)\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy (\%)\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy (\%)\end{tabular}} & \textbf{Test loss} \\ \hline
+1            & 96.715                                                            & 0.098               & 79.28                                                                  & 1.169                                                               & 79.1                                                              & 1.215              \\ \hline
+2            & 96.815                                                            & 0.096               & 79.02                                                                  & 1.214                                                               & 78.8                                                              & 1.266              \\ \hline
+3            & 96.75                                                             & 0.095               & 79.15                                                                  & 1.204                                                               & 78.5                                                              & 1.338              \\ \hline
+Avg      & 96.76    $\pm 0.0412
+$                                                         & 0.096 $\pm 0.001
+$              & 79.15 $\pm 0.106
+$                                                                 & 1.195  $\pm 0.0193
+$                                                             & 78.8  $\pm 0.244 $
+                                                            & 1.273 $\pm 0.0503 $
+             \\ \hline
+\end{tabular}
+\caption{Evaluation of the network using subtractive feedback on CIFAR across three runs. Last row outlines the average of each metric}
+\label{tab:cifarsubtractive}
+\end{table}
+
+\textbf{Table \ref{tab:cifarmultiplicative}} shows the accuracy and loss on the network using multiplicative feedback for the training, validation and test set across three runs. The final rows of the table shows the average of the metrics. From this table we can conclude that multiplicative feedback has significantly degraded the accuracy rate of the baseline classifier.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|}
+\hline
+\textbf{Run} & \textbf{\begin{tabular}[c]{@{}l@{}}Train\\ accuracy\end{tabular}} & \textbf{Train loss} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation\\ accuracy\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Validation \\ loss\end{tabular}} & \textbf{\begin{tabular}[c]{@{}l@{}}Test \\ accuracy\end{tabular}} & \textbf{Test loss} \\ \hline
+1            & 30.325                                                            & 2.4136              & 30.08                                                                  & 2.4932                                                              & 31.4                                                              & 2.3154             \\ \hline
+2            & 22.855                                                            & 3.05311             & 24                                                                     & 3.1584                                                              & 24.9                                                              & 3.0324             \\ \hline
+3            & 15.815                                                            & 5.3508              & 18.68                                                                  & 4.76067                                                             & 18.5                                                              & 4.6992             \\ \hline
+Avg          & 22.99833                                                          & 3.605837            & 24.25333                                                               & 3.470757                                                            & 24.93333                                                          & 3.349              \\ \hline
+\end{tabular}
+\caption{Evaluation of the network using multiplicative feedback on CIFAR across three runs. Last row outlines the average of each metric}
+\label{tab:cifarmultiplicative}
+\end{table}
+
+\textbf{Table \ref{tab:cifargenout}} shows the accuracy and loss on the network using the generator's output as a second input channel for the training, validation and test set across three runs. The final rows of the table shows the average of the metrics. From this table we can conclude this approach has improved the accuracy rate by 0.7\%.
 
 
 \end{appendices}

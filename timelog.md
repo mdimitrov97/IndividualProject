@@ -420,3 +420,15 @@
 ### 9 March 2020
 * *3h* Further cleaned up code and evaluated models
 * *1h 30 min* Started working on "Implementation" and "Evaluation" chapters
+
+### 13 March 2020
+* *2h* Revisited how GradCAM works
+
+### 14 March 2020
+* *3h* Created a new network which outputs a heatmap and label
+
+### 15 March 2020
+* *3h* Evaluated new network
+
+### 16 March 2020
+* Finished coding, started working daily on dissertation *
